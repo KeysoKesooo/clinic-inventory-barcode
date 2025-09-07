@@ -1,0 +1,327 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+body {
+  position: relative;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  --main-bg-color: #F8FAFC;
+  --primary-color: #B19470;
+  --secondary-color: #1E201E;
+  --triary-color: #76453B;
+  font-family: 'Roboto', sans-serif;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 0%;
+  background: url('deped-bg.png') no-repeat center center fixed;
+  background-size: cover;
+  opacity: 0.8; /* Increased opacity for better visibility */
+  z-index: -1; /* Ensure the overlay is behind content */
+}
+
+
+.forgot-password {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.forgot-password a {
+  color: #ffffff;
+  text-decoration: underline;
+  font-size: 0.9em;
+  transition: color 0.3s ease;
+}
+
+.forgot-password a:hover {
+  color: #f0c040;
+}
+
+.container {
+  display: flex;
+  width: 50%;
+  max-width: 500px;
+  height: 500px; /* Adjust height to suit your design */
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  position: absolute;   /* or fixed if you want it always visible on scroll */
+  top: 80px;            /* adjust positioning */
+  left: 50%;
+  transform: translateX(-50%);  /* center horizontally */
+  z-index: 9999;
+}
+
+
+.logo img {
+  max-width: 200px; /* Adjust the size of the logo */
+  height: auto;
+}
+/* Styles for the image container */
+.login-image {
+  position: relative;
+  width: 100%; /* Use 100% or a specific width */
+  height: 700px; /* Adjust to your preferred height */
+  overflow: hidden;
+  background-size: cover;
+}
+
+
+
+
+.form {
+  --input-focus: #2d8cf0;
+  --font-color: #323232;
+  --font-color-sub: #666;
+  --bg-color: #F8FAFC;
+  --main-color: black;
+  width: 100%;
+  padding: 30px;
+  background: #1E201E;;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  border-left: 2px solid #1E201E;
+}
+.title {
+  color: #F8FAFC;
+  font-size: 26px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  height: auto; /* Ensures title has consistent height */
+  line-height: 1.2; /* Adjust line spacing for better alignment */
+}
+
+.title span {
+  color: #F8FAFC;
+  font-size: 14px;
+  font-weight: normal;
+  display: block; /* Ensures proper alignment */
+}
+
+.title h5 {
+  color: #D17D98;
+  font-size: 15px;
+  margin: 0; /* Remove default margin that may cause shifting */
+  padding: 0; /* Remove padding if unnecessary */
+  text-align: center; /* Align to the center for consistency */
+  display: inline-block; /* Prevent block-level behavior if not needed */
+}
+
+
+.input {
+  border: 2px solid var(--main-color);
+  background-color: white;
+  box-shadow: 4px 4px var(--main-color);
+  color: var(--font-color);
+  width: 80%;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+
+.input::placeholder {
+  color: var(--font-color-sub);
+  opacity: 0.8;
+}
+
+.input:focus {
+  border: 2px solid var(--input-focus);
+}
+
+.login-with {
+  display: flex;
+  gap: 20px;
+}
+
+.button-log a {
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 100%;
+  border: 2px solid var(--main-color);
+  background-color: var(--bg-color);
+  box-shadow: 4px 4px var(--main-color);
+  color: var(--font-color);
+  font-size: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  fill: var(--main-color);
+}
+
+.button-log:active,
+.button-confirm:active {
+  box-shadow: 0px 0px var(--main-color);
+  transform: translate(3px, 3px);
+}
+
+.button-confirm {
+  margin: 30px auto 0;
+  width: 120px;
+  height: 40px;
+  border-radius: 5px;
+  border: 2px solid var(--main-color);
+  background-color: white;
+  box-shadow: 4px 4px var(--main-color);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--font-color);
+  cursor: pointer;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+
+  .forgot-password {
+    width: 100%;
+    text-align: center;
+    margin: 10px;
+  }
+  .login-image {
+    display: none;
+  }
+.container {
+  padding: 50px 20px;
+  height: 80%; /* Adjust height to suit your design */
+  width: 100%; /* Adjust width to suit your design */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.logo {
+  position: relative;
+  display: flex;
+  left: 80px;
+}
+
+.logo img {
+  max-width: 140px; /* Adjust the size of the logo */
+  height: auto;
+
+}
+
+.form {
+  
+  background: var();
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 15px;
+  width: 300px;
+  border: 2px solid var(--main-color);
+  box-shadow: 4px 4px var(--main-color);
+
+}
+
+.title {
+  width: inherit;
+  color: var(--bg-color);
+  font-weight: 900;
+  font-size: 20px;
+  margin-bottom: 25px;
+}
+
+.title span {
+  color: var(--bg-color);
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.title h5 {
+  font-size: 15px;
+}
+
+.input {
+  width: 90%;
+  height: 40px;
+  border-radius: 5px;
+  border: 2px solid var(--main-color);
+  background-color: var(--bg-color);
+  box-shadow: 4px 4px var(--main-color);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--font-color);
+  padding: 5px 15px;
+  outline: none;
+  
+}
+
+
+  .button-confirm {
+    width: 100px;
+    font-size: 15px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .title span {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form {
+    padding: 10px;
+    max-width: 100%;
+  }
+  
+  .login-image {
+    display: none;
+  }
+
+  .input {
+    max-width: 90%;
+  }
+
+  .button-confirm {
+    width: 80px;
+    font-size: 14px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .title span {
+    font-size: 14px;
+  }
+
+  .login-with {
+    gap: 10px;
+  }
+
+  .button-log a {
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+  }
+}
