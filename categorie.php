@@ -63,6 +63,7 @@ if (isset($_POST['edit_cat'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title ?></title>
     <link rel="stylesheet" href="libs/css/roles.css">
+
 </head>
 
 <body>
@@ -83,11 +84,6 @@ if (isset($_POST['edit_cat'])) {
                 <a class="export_button" id="download-categories-btn">
                     <i class="fa-solid fa-download"></i>
                     <span class="export_button__text">Export</span>
-                </a>
-
-                <a class="export_button" id="openCategoriesPopup">
-                    <i class="fa-solid fa-upload"></i>
-                    <span class="export_button__text">Import</span>
                 </a>
 
                 <!-- Categories Import Popup -->
@@ -210,26 +206,20 @@ if (isset($_POST['edit_cat'])) {
 
     document.addEventListener('DOMContentLoaded', function() {
         // Add click event to download button
-        document.getElementById('download-btn').addEventListener('click', downloadFilteredData);
+        document.getElementById('download-categories-btn').addEventListener('click', downloadFilteredData);
 
         function downloadFilteredData() {
             // Get all visible rows (filtered rows)
             const visibleRows = document.querySelectorAll('.table-row:not([style*="display: none"])');
 
             // Prepare CSV content
-            let csvContent = "No.,Name,Username,Phone Number,Email,User Role,Status,Last Login\n";
+            let csvContent = "No.,Category Name\n";
 
             visibleRows.forEach(row => {
                 const columns = row.querySelectorAll('.table-data');
                 const rowData = [
                     columns[0].textContent.trim(),
-                    columns[1].textContent.trim(),
-                    columns[2].textContent.trim(),
-                    columns[3].textContent.trim(),
-                    columns[4].textContent.trim(),
-                    columns[5].textContent.trim(),
-                    columns[6].textContent.trim(),
-                    columns[7].textContent.trim()
+                    columns[1].textContent.trim()
                 ];
 
                 // Escape quotes and add to CSV

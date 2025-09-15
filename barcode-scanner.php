@@ -20,55 +20,59 @@
     <style>
     body {
         font-family: Arial, sans-serif;
-        background: #f8f9fa;
+        background: #f0f2f5;
     }
 
     .scanner-container {
-        max-width: 600px;
+        max-width: 650px;
         margin: auto;
-        margin-top: 50px;
-        padding: 20px;
+        margin-top: 60px;
+        padding: 25px;
         background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 20px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
     }
 
     #reader {
         width: 100%;
         max-width: 450px;
-        margin: auto;
+        margin: 20px auto;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
-    .product-card {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 15px;
-        margin-top: 15px;
-        background: #fdfdfd;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-        text-align: center;
+    .btn-custom {
+        width: 48%;
     }
 
-    .product-card img {
-        max-width: 200px;
-        margin-bottom: 10px;
-        border-radius: 10px;
+    .back-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
     }
     </style>
 </head>
 
 <body>
+    <!-- Back Button -->
+    <a href="product.php" class="btn btn-outline-secondary back-btn">
+        ← Back
+    </a>
+
     <div class="scanner-container text-center">
         <h3 class="mb-3">📷 Scan Product Barcode</h3>
-        <p class="text-muted">Point your camera at the barcode to record.</p>
+        <p class="text-muted">Point your camera at the barcode to record a sale.</p>
 
         <div id="reader"></div>
 
         <!-- Form will appear here after scan -->
-        <div id="sale-form-container"></div>
+        <div id="sale-form-container" class="mt-3"></div>
 
-        <button id="start-scan" class="btn btn-primary mt-3">Start Scanning</button>
-        <button id="stop-scan" class="btn btn-danger mt-3">Stop Scanning</button>
+        <div class="d-flex justify-content-between mt-4">
+            <button id="start-scan" class="btn btn-primary btn-custom">Start Scanning</button>
+            <button id="stop-scan" class="btn btn-danger btn-custom">Stop Scanning</button>
+        </div>
     </div>
 
     <!-- Success sound -->
@@ -92,9 +96,9 @@
             onScanSuccess
         ).then(() => {
             isScanning = true;
-            $("#sale-form-container").html('<div class="text-muted mt-2">Scanner is running...</div>');
+            $("#sale-form-container").html('<div class="text-muted mt-2">✅ Scanner is running...</div>');
         }).catch(err => {
-            $("#sale-form-container").html('<div class="text-danger">Error: ' + err + '</div>');
+            $("#sale-form-container").html('<div class="text-danger">❌ Error: ' + err + '</div>');
         });
     }
 
@@ -102,6 +106,7 @@
         if (isScanning && html5QrCode) {
             html5QrCode.stop().then(() => {
                 isScanning = false;
+                $("#sale-form-container").html('<div class="text-warning mt-2">⏹️ Scanner stopped.</div>');
             });
         }
     }
@@ -116,14 +121,14 @@
         }, function(response) {
             $('#sale-form-container').html(response);
         }).fail(function(xhr) {
-            $('#sale-form-container').html('<div class="text-danger">Error: ' + xhr.responseText + '</div>');
+            $('#sale-form-container').html('<div class="text-danger">❌ Error: ' + xhr.responseText + '</div>');
         });
     }
 
     $("#start-scan").click(startScanner);
     $("#stop-scan").click(stopScanner);
 
-    // Auto start
+    // Auto start scanner on page load
     startScanner();
     </script>
 </body>

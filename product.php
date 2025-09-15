@@ -20,6 +20,14 @@ if (isset($_POST['edit_product'])) {
         $p_dosage  = remove_junk($db->escape($_POST['product-dosage']));
         $p_desc    = remove_junk($db->escape($_POST['product-description']));
 
+        // === Duplicate check ===
+        $check_sql = "SELECT id FROM products WHERE name = '{$p_name}' AND id != {$id} LIMIT 1";
+        $check_res = $db->query($check_sql);
+        if ($db->num_rows($check_res) > 0) {
+            $session->msg('d', "Another product with the name '{$p_name}' already exists!");
+            redirect("product.php?id={$id}", false);
+        }
+
         // Fetch current product to keep existing photo if no new file is uploaded
         $sql = "SELECT product_photo FROM products WHERE id='{$id}' LIMIT 1";
         $result = $db->query($sql);
@@ -32,7 +40,6 @@ if (isset($_POST['edit_product'])) {
             $target_dir = "uploads/products/";
             $target_file = $target_dir . $file_name;
 
-            // Create folder if not exists
             if (!file_exists($target_dir)) {
                 mkdir($target_dir, 0777, true);
             }
@@ -63,6 +70,7 @@ if (isset($_POST['edit_product'])) {
 
 
 
+
 // ADD PRODUCT LOGIC — run only if adding
 if (isset($_POST['add_product'])) {
     $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-description');
@@ -76,10 +84,18 @@ if (isset($_POST['add_product'])) {
         $p_desc   = remove_junk($db->escape($_POST['product-description']));
         $date     = make_date();
 
+        // === Duplicate check ===
+        $check_sql = "SELECT id FROM products WHERE name = '{$p_name}' LIMIT 1";
+        $check_res = $db->query($check_sql);
+        if ($db->num_rows($check_res) > 0) {
+            $session->msg('d', "Product '{$p_name}' already exists!");
+            redirect('product.php', false);
+        }
+
         // Handle File Upload
         $photo_name = '';
         if (!empty($_FILES['product-photo']['name'])) {
-            $upload_dir = 'uploads/products/'; // Make sure this folder exists and is writable
+            $upload_dir = 'uploads/products/';
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
             }
@@ -93,8 +109,7 @@ if (isset($_POST['add_product'])) {
         }
 
         $query  = "INSERT INTO products (name, quantity, dosage, description, categorie_id, product_photo, date) ";
-        $query .= "VALUES ('{$p_name}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$p_cat}', '{$photo_name}', '{$date}') ";
-        $query .= "ON DUPLICATE KEY UPDATE name='{$p_name}'";
+        $query .= "VALUES ('{$p_name}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$p_cat}', '{$photo_name}', '{$date}')";
 
         if ($db->query($query)) {
             $session->msg('s', "Product added");
@@ -107,6 +122,97 @@ if (isset($_POST['add_product'])) {
         $session->msg("d", $errors);
         redirect('product.php', false);
     }
+}
+
+
+if (isset($_POST['import_products'])) {
+    $csv_file = $_FILES['csv_file']['tmp_name'];
+
+    if ($_FILES['csv_file']['error'] > 0) {
+        $session->msg('d', 'Error uploading file.');
+        redirect('product.php', false);
+    }
+
+    $success_count = 0;
+    $duplicate_count = 0;
+    $error_count = 0;
+    $errors = [];
+
+    $db->query("START TRANSACTION");
+
+    if (($handle = fopen($csv_file, "r")) !== FALSE) {
+        // Skip header row
+        fgetcsv($handle);
+
+        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            if (!isset($data[0], $data[1], $data[2], $data[3], $data[4])) {
+                $error_count++;
+                $errors[] = "Missing required fields in CSV row";
+                continue;
+            }
+
+            $p_name       = remove_junk($db->escape($data[0]));
+            $category_name = remove_junk($db->escape($data[1]));
+            $p_qty        = (int)$db->escape($data[2]);
+            $p_dosage     = remove_junk($db->escape($data[3]));
+            $p_desc       = remove_junk($db->escape($data[4]));
+            $date         = make_date();
+
+            // Duplicate check by product title
+            $check_sql = "SELECT id FROM products WHERE name='{$p_name}' LIMIT 1";
+            $check_res = $db->query($check_sql);
+            if ($db->num_rows($check_res) > 0) {
+                $duplicate_count++;
+                continue; // Skip this row
+            }
+
+            // Get category ID by name
+            $cat_query = "SELECT id FROM categories WHERE name='{$category_name}' LIMIT 1";
+            $cat_res = $db->query($cat_query);
+
+            if ($db->num_rows($cat_res) == 0) {
+                $error_count++;
+                $errors[] = "Category '{$category_name}' does not exist for product '{$p_name}'";
+                continue;
+            }
+
+            $cat_row = $db->fetch_assoc($cat_res);
+            $p_cat = (int)$cat_row['id'];
+
+            // Insert product
+            $query  = "INSERT INTO products (name, categorie_id, quantity, dosage, description, date) ";
+            $query .= "VALUES ('{$p_name}', '{$p_cat}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$date}')";
+
+            if ($db->query($query)) {
+                $success_count++;
+            } else {
+                $error_count++;
+                $errors[] = "Failed to import '{$p_name}'. Database error: " . $db->getLastError();
+            }
+        }
+
+        fclose($handle);
+
+        if ($error_count == 0) {
+            $db->query("COMMIT");
+            $session->msg('s', "Successfully imported {$success_count} products. Duplicates skipped: {$duplicate_count}");
+        } else {
+            $db->query("ROLLBACK");
+            $error_msg = "Import completed with issues:<br>";
+            $error_msg .= "- Successfully processed: {$success_count}<br>";
+            $error_msg .= "- Duplicates skipped: {$duplicate_count}<br>";
+            $error_msg .= "- Errors encountered: {$error_count}<br>";
+            $error_msg .= "First 5 errors:<br>" . implode("<br>", array_slice($errors, 0, 5));
+            if (count($errors) > 5) {
+                $error_msg .= "<br>...and " . (count($errors) - 5) . " more";
+            }
+            $session->msg('d', $error_msg);
+        }
+    } else {
+        $session->msg('d', 'Failed to open the CSV file.');
+    }
+
+    redirect('product.php', false);
 }
 
 ?>
@@ -151,7 +257,7 @@ if (isset($_POST['add_product'])) {
             <div id="popupForm-products" class="popup-form">
                 <div class="editpopup_form_area">
                     <span id="closePopup-products" class="close-btn">&times;</span>
-                    <form method="post" action="management.php" enctype="multipart/form-data">
+                    <form method="post" action="product.php" enctype="multipart/form-data">
                         <div class="editpopup_form_group">
                             <label class="editpopup_sub_title" for="csv_file">Choose CSV File</label>
                             <input type="file" name="csv_file" class="editpopup_form_style" required>
@@ -298,7 +404,7 @@ if (isset($_POST['add_product'])) {
 
                         <!-- Barcode Button -->
                         <button class="btn btn-info generate-barcode-btn"
-                            data-product-id="<?php echo $product['id']; ?>"
+                            data-product-id="<?php echo htmlspecialchars($product['id']); ?>"
                             data-product-name="<?php echo htmlspecialchars($product['name']); ?>">
                             <i class="glyphicon glyphicon-barcode"></i>
                         </button>
@@ -689,7 +795,7 @@ document.querySelectorAll('.generate-barcode-btn').forEach(function(button) {
             fontSize: 20,
             width: 4,
             height: 80,
-            displayValue: true
+            displayValue: false
         });
 
         document.getElementById('barcodeProductName').textContent = productName;

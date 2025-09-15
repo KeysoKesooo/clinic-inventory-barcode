@@ -5,40 +5,6 @@
   $all_users = find_all_user();
   $groups = find_all('user_groups');
 
-  if (isset($_POST['import_users'])) {
-    if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] == 0) {
-        $file = $_FILES['csv_file']['tmp_name'];
-        $handle = fopen($file, "r");
-
-        if ($handle !== false) {
-            // Skip the first line if it's the header
-            fgetcsv($handle);
-
-            while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-                $name = remove_junk($db->escape($data[0]));         // Full Name
-                $username = remove_junk($db->escape($data[1]));     // Username
-                $user_level = (int)$db->escape($data[2]);           // User Level (1=Admin, 2=Faculty, etc.)
-                $status = isset($data[3]) ? (int)$db->escape($data[3]) : 1; // Default Active
-                $password = sha1("default123"); // Default password (you can improve this)
-
-                $sql = "INSERT INTO users (name, username, password, user_level, status) ";
-                $sql .= "VALUES ('{$name}', '{$username}', '{$password}', '{$user_level}', '{$status}')";
-                $db->query($sql);
-            }
-
-            fclose($handle);
-            $session->msg('s', "CSV imported successfully.");
-        } else {
-            $session->msg('d', "Failed to open uploaded CSV.");
-        }
-    } else {
-        $session->msg('d', "No file uploaded or file error.");
-    }
-
-    redirect('users.php', false);
-}
-
-
   // Edit User logic
 if (isset($_POST['edit_user'])) {
     $id = (int)$_POST['user_id'];
@@ -94,6 +60,118 @@ if (isset($_POST['add_user'])) {
   }
 }
 
+
+// Handling CSV import for multiple users
+if (isset($_POST['import_users'])) {
+    $csv_file = $_FILES['csv_file']['tmp_name'];
+
+    if ($_FILES['csv_file']['error'] > 0) {
+        $session->msg('d', 'Error uploading file.');
+        redirect('users.php', false);
+    }
+
+    $success_count = 0;
+    $duplicate_count = 0;
+    $error_count = 0;
+    $errors = [];
+    $generated_credentials = [];
+
+    $db->query("START TRANSACTION");
+
+    if (($handle = fopen($csv_file, "r")) !== FALSE) {
+        // Skip header row
+        fgetcsv($handle);
+
+        // Role → user_level mapping (must match user_groups.group_level)
+        $role_map = [
+            'admin' => 1,
+            'staff' => 2
+        ];
+
+        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            if (!isset($data[0], $data[1])) { // Full Name, Role
+                $error_count++;
+                $errors[] = "Missing required fields in CSV row";
+                continue;
+            }
+
+            $full_name = remove_junk($db->escape($data[0]));
+            $user_role = trim(remove_junk($db->escape($data[1])));
+            $normalized_role = strtolower($user_role);
+
+            // Validate role
+            if (!isset($role_map[$normalized_role])) {
+                $error_count++;
+                $errors[] = "Invalid role '$user_role' for $full_name. Only Admin or Staff allowed.";
+                continue;
+            }
+
+            $user_level = $role_map[$normalized_role];
+
+            // Split full name for username/password
+            $name_parts = explode(' ', $full_name);
+            $first_name = $name_parts[0];
+            $last_name = end($name_parts);
+
+            // Generate username: first letter + last name
+            $username = strtolower(substr($first_name, 0, 1) . $last_name);
+            $username = remove_junk($db->escape($username));
+
+            // Generate password: last name + 123
+            $raw_password = strtolower($last_name) . '123';
+            $password = password_hash($raw_password, PASSWORD_BCRYPT);
+
+            // Check for duplicate full name or username
+            $check_query = "SELECT COUNT(*) as count FROM users WHERE username='{$username}' OR name='{$full_name}'";
+            $result = $db->query($check_query);
+            $row = $db->fetch_assoc($result);
+
+            if ($row['count'] > 0) {
+                $duplicate_count++;
+                continue; // Skip this user
+            }
+
+            // Insert user
+            $insert_query = "INSERT INTO users (name, username, password, user_level, status)
+                             VALUES ('{$full_name}', '{$username}', '{$password}', {$user_level}, 1)";
+
+            if ($db->query($insert_query)) {
+                $success_count++;
+                $generated_credentials[$full_name] = [
+                    'username' => $username,
+                    'password' => $raw_password
+                ];
+            } else {
+                $error_count++;
+                $errors[] = "Failed to import $full_name. Database error: " . $db->getLastError();
+            }
+        }
+
+        fclose($handle);
+
+        if ($error_count == 0) {
+            $db->query("COMMIT");
+            $session->msg('s', "Successfully imported {$success_count} users. Duplicates skipped: {$duplicate_count}");
+        } else {
+            $db->query("ROLLBACK");
+            $error_msg = "Import completed with issues:<br>";
+            $error_msg .= "- Successfully processed: {$success_count}<br>";
+            $error_msg .= "- Duplicates skipped: {$duplicate_count}<br>";
+            $error_msg .= "- Errors encountered: {$error_count}<br>";
+            $error_msg .= "First 5 errors:<br>" . implode("<br>", array_slice($errors, 0, 5));
+            if (count($errors) > 5) {
+                $error_msg .= "<br>...and " . (count($errors) - 5) . " more";
+            }
+            $session->msg('d', $error_msg);
+        }
+
+    } else {
+        $session->msg('d', 'Failed to open the CSV file.');
+    }
+
+    redirect('users.php', false);
+}
+
 ?>
 
 <?php include_once('layouts/header.php'); ?>
@@ -137,7 +215,7 @@ if (isset($_POST['add_user'])) {
             <div id="popupForm" class="popup-form">
                 <div class="editpopup_form_area">
                     <span id="closePopup" class="close-btn">&times;</span>
-                    <form method="post" action="management.php" enctype="multipart/form-data">
+                    <form method="post" action="users.php" enctype="multipart/form-data">
                         <div class="editpopup_form_group">
                             <label class="editpopup_sub_title" for="csv_file">Choose CSV File</label>
                             <input type="file" name="csv_file" class="editpopup_form_style" required>
@@ -417,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const visibleRows = document.querySelectorAll('.table-row:not([style*="display: none"])');
 
         // Prepare CSV content
-        let csvContent = "No.,Name,Username,Phone Number,Email,User Role,Status,Last Login\n";
+        let csvContent = "No.,Name,Username,User Role,Status,Last Login\n";
 
         visibleRows.forEach(row => {
             const columns = row.querySelectorAll('.table-data');
@@ -427,9 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 columns[2].textContent.trim(),
                 columns[3].textContent.trim(),
                 columns[4].textContent.trim(),
-                columns[5].textContent.trim(),
-                columns[6].textContent.trim(),
-                columns[7].textContent.trim()
+                columns[5].textContent.trim()
             ];
 
             // Escape quotes and add to CSV
