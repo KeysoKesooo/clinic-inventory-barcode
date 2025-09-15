@@ -1,7 +1,7 @@
 <?php
 $page_title = 'All Categories';
 require_once('includes/load.php');
-page_require_level(1);
+page_require_level(2);
 
 $all_categories = find_all('categories');
 

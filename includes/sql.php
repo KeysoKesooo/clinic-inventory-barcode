@@ -145,7 +145,7 @@ function authenticate($username = '', $password = '') {
       $sql .="g.group_name ";
       $sql .="FROM users u ";
       $sql .="LEFT JOIN user_groups g ";
-      $sql .="ON g.group_level=u.user_level ORDER BY u.name ASC";
+      $sql .="ON g.group_level=u.user_level ORDER BY u.name DESC";
       $result = find_by_sql($sql);
       return $result;
   }
@@ -210,7 +210,7 @@ function authenticate($username = '', $password = '') {
    /* Function for Finding all product name
    /* JOIN with categorie  and media database table
    /*--------------------------------------------------------------*/
-function join_product_table($conditions = array(), $order_by = 'p.id ASC', $limit = null) {
+function join_product_table($conditions = array(), $order_by = 'p.id DESC', $limit = null) {
     global $db;
     
     // Updated SELECT with dosage & description
@@ -346,7 +346,7 @@ function find_all_sale(){
     $sql .= " FROM sales s";
     $sql .= " LEFT JOIN products p ON s.product_id = p.id";
     $sql .= " LEFT JOIN categories c ON p.categorie_id = c.id";
-    $sql .= " ORDER BY s.date DESC";
+    $sql .= " ORDER BY s.date DESC, s.id DESC";
     return find_by_sql($sql);
 }
  /*--------------------------------------------------------------*/
@@ -384,6 +384,7 @@ function find_sale_by_dates($start_date,$end_date){
 /*--------------------------------------------------------------*/
 function dailySales($year, $month) {
     global $db;
+    
     $sql  = "SELECT 
                 s.id, 
                 s.qty, 
@@ -397,9 +398,12 @@ function dailySales($year, $month) {
             LEFT JOIN products p ON s.product_id = p.id 
             LEFT JOIN categories c ON p.categorie_id = c.id 
             WHERE s.date >= NOW() - INTERVAL 1 DAY 
-            GROUP BY DATE(s.date), s.product_id";
+            GROUP BY DATE(s.date), s.product_id
+            ORDER BY s.id DESC";
+
     return find_by_sql($sql);
 }
+
 
 
 

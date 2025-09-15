@@ -33,6 +33,17 @@
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
     }
 
+    #sale-form-container img {
+        max-width: 100%;
+        /* Image won't exceed container width */
+        max-height: 300px;
+        /* Adjust to your preferred max height */
+        object-fit: contain;
+        /* Keep aspect ratio, no stretching */
+        display: block;
+        margin: 10px auto;
+    }
+
     #reader {
         width: 100%;
         max-width: 450px;
