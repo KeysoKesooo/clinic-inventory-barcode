@@ -145,7 +145,7 @@ function authenticate($username = '', $password = '') {
       $sql .="g.group_name ";
       $sql .="FROM users u ";
       $sql .="LEFT JOIN user_groups g ";
-      $sql .="ON g.group_level=u.user_level ORDER BY u.name DESC";
+      $sql .="ON g.group_level=u.user_level ORDER BY u.id DESC";
       $result = find_by_sql($sql);
       return $result;
   }
