@@ -86,7 +86,7 @@
                                 <a href="product.php?id=<?php echo $med['id']; ?>">
                                     ⚠ <?php echo remove_junk($med['name']); ?>
                                     <br><small>Expires:
-                                        <?php echo date('Y-m-d', strtotime($med['expiration_date'])); ?></small>
+                                        <?php echo date('m-d-Y', strtotime($med['expiration_date'])); ?></small>
                                 </a>
                             </li>
                             <?php endforeach; ?>

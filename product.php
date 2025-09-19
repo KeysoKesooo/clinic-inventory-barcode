@@ -7,9 +7,10 @@ $products = join_product_table();
 $all_categories = find_all('categories');
 $all_photo = find_all('media');
 
-// EDIT PRODUCT LOGIC — run only if editing
+
+// === EDIT PRODUCT LOGIC ===
 if (isset($_POST['edit_product'])) {
-    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-description', 'product-expiration-date');
+    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-expiration-date');
     validate_fields($req_fields);
 
     if (empty($errors)) {
@@ -20,6 +21,12 @@ if (isset($_POST['edit_product'])) {
         $p_dosage  = remove_junk($db->escape($_POST['product-dosage']));
         $p_desc    = remove_junk($db->escape($_POST['product-description']));
         $p_exp     = remove_junk($db->escape($_POST['product-expiration-date']));
+
+        // === Expiration check ===
+        if (strtotime($p_exp) < strtotime(date("Y-m-d"))) {
+            $session->msg('d', "Invalid! You cannot update '{$p_name}' with an expired date ({$p_exp}).");
+            redirect("product.php?id={$id}", false);
+        }
 
         // === Duplicate check ===
         $check_sql = "SELECT id FROM products WHERE name = '{$p_name}' AND id != {$id} LIMIT 1";
@@ -68,10 +75,9 @@ if (isset($_POST['edit_product'])) {
     }
 }
 
-
-// ADD PRODUCT LOGIC — run only if adding
+// === ADD PRODUCT LOGIC ===
 if (isset($_POST['add_product'])) {
-    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-description', 'product-expiration-date');
+    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-expiration-date');
     validate_fields($req_fields);
 
     if (empty($errors)) {
@@ -82,6 +88,12 @@ if (isset($_POST['add_product'])) {
         $p_desc   = remove_junk($db->escape($_POST['product-description']));
         $p_exp    = remove_junk($db->escape($_POST['product-expiration-date']));
         $date     = make_date();
+
+        // === Expiration check ===
+        if (strtotime($p_exp) < strtotime(date("Y-m-d"))) {
+            $session->msg('d', "Invalid! The product '{$p_name}' is already expired ({$p_exp}).");
+            redirect('product.php', false);
+        }
 
         // === Duplicate check ===
         $check_sql = "SELECT id FROM products WHERE name = '{$p_name}' LIMIT 1";
@@ -122,8 +134,8 @@ if (isset($_POST['add_product'])) {
         redirect('product.php', false);
     }
 }
-// IMPORT PRODUCTS LOGIC — run only if importing
 
+// === IMPORT PRODUCTS LOGIC ===
 if (isset($_POST['import_products'])) {
     $csv_file = $_FILES['csv_file']['tmp_name'];
 
@@ -156,8 +168,15 @@ if (isset($_POST['import_products'])) {
             $p_qty         = (int)$db->escape($data[2]);
             $p_dosage      = remove_junk($db->escape($data[3]));
             $p_desc        = remove_junk($db->escape($data[4]));
-            $p_exp         = remove_junk($db->escape($data[5])); // <-- New field
+            $p_exp         = remove_junk($db->escape($data[5]));
             $date          = make_date();
+
+            // === Expiration check ===
+            if (strtotime($p_exp) < strtotime(date("Y-m-d"))) {
+                $error_count++;
+                $errors[] = "Product '{$p_name}' has expired date ({$p_exp}). Skipped.";
+                continue; // Skip importing this row
+            }
 
             // Duplicate check by product title
             $check_sql = "SELECT id FROM products WHERE name='{$p_name}' LIMIT 1";
@@ -215,6 +234,8 @@ if (isset($_POST['import_products'])) {
 
     redirect('product.php', false);
 }
+
+
 
 
 ?>
@@ -466,7 +487,7 @@ if (isset($_POST['import_products'])) {
                 <div class="form_group">
                     <label for="product-title">Medicine Title</label>
                     <input class="form_style" type="text" name="product-title" id="product-title"
-                        placeholder="Product Title" required>
+                        placeholder="Medicine Title" required>
                 </div>
 
                 <div class="form_group">
