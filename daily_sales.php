@@ -99,7 +99,7 @@ $sales = dailySales($year, $month);
                     <div class="table-data"><?php echo remove_junk($sale['name']); ?></div>
                     <div class="table-data"><?php echo remove_junk($sale['category_name']); ?></div> <!-- ✅ ADD THIS -->
                     <div class="table-data"><?php echo (int)$sale['qty']; ?></div>
-                    <div class="table-data"><?php echo $sale['date']; ?></div>
+                    <div class="table-data"><?php echo date('m-d-Y', strtotime($sale['date'])); ?></div>
                 </div>
                 <?php endforeach; ?>
             </div>

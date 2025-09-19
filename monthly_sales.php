@@ -107,7 +107,7 @@
                             <div class="table-data"><?php echo $entry['category_name'] ?: 'Uncategorized'; ?></div>
                             <div class="table-data"><?php echo $entry['dosage'] ?: 'N/A'; ?></div>
                             <div class="table-data"><?php echo $entry['qty']; ?></div>
-                            <div class="table-data"><?php echo $entry['date']; ?></div>
+                            <div class="table-data"><?php echo date('m-d-Y', strtotime($entry['date'])); ?></div>
                         </div>
                         <?php endforeach; ?>
 

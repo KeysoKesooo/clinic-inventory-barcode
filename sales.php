@@ -207,7 +207,7 @@ if (!isset($_GET['filter'])) {
                             <?= isset($sale['category_name']) ? remove_junk($sale['category_name']) : 'Uncategorized' ?>
                         </div>
                         <div class="table-data"><?= (int)$sale['qty'] ?></div>
-                        <div class="table-data"><?= $sale['date'] ?></div>
+                        <div class="table-data"><?php echo date('m-d-Y', strtotime($sale['date'])); ?></div>
                         <div class="table-data">
                             <button type="button" class="btn btn-warning edit-btn" data-id="<?= (int)$sale['id'] ?>"
                                 data-name="<?= remove_junk($sale['name']) ?>" data-qty="<?= (int)$sale['qty'] ?>"
