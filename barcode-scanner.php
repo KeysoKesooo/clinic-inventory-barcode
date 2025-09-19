@@ -2,6 +2,8 @@
   require_once('includes/load.php');
   page_require_level(3);
 ?>
+<?php include_once('layouts/header.php'); ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -24,66 +26,64 @@
     }
 
     .scanner-container {
-        max-width: 650px;
+        max-width: 700px;
         margin: auto;
-        margin-top: 60px;
         padding: 25px;
         background: white;
         border-radius: 20px;
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+        position: relative;
     }
 
     #sale-form-container img {
-        max-width: 100%;
-        /* Image won't exceed container width */
-        max-height: 300px;
-        /* Adjust to your preferred max height */
+        max-width: 30%;
+        max-height: 20%;
         object-fit: contain;
-        /* Keep aspect ratio, no stretching */
         display: block;
         margin: 10px auto;
     }
 
     #reader {
         width: 100%;
-        max-width: 450px;
+        max-width: 100%;
         margin: 20px auto;
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        position: relative;
     }
 
-    .btn-custom {
-        width: 48%;
-    }
-
-    .back-btn {
+    /* Scanner overlay strip */
+    .scanner-overlay {
         position: absolute;
-        top: 20px;
-        left: 20px;
+        top: 30%;
+        /* shifted upward */
+        left: 50%;
+        width: 80%;
+        height: 100px;
+        transform: translate(-50%, -50%);
+        border: 3px solid #00c853;
+        background: rgba(0, 200, 83, 0.1);
+        border-radius: 8px;
+        pointer-events: none;
+        z-index: 2;
     }
     </style>
 </head>
 
 <body>
-    <!-- Back Button -->
-    <a href="product.php" class="btn btn-outline-secondary back-btn">
-        ← Back
-    </a>
 
     <div class="scanner-container text-center">
-        <h3 class="mb-3">📷 Scan Product Barcode</h3>
-        <p class="text-muted">Point your camera at the barcode to record a sale.</p>
+        <h3 class="mb-3">📷 Scan Medicine Barcode</h3>
+        <p class="text-muted">Point your camera at the barcode to record a medicine.</p>
 
-        <div id="reader"></div>
+        <div id="reader">
+            <!-- Overlay strip -->
+            <div class="scanner-overlay"></div>
+        </div>
 
         <!-- Form will appear here after scan -->
         <div id="sale-form-container" class="mt-3"></div>
-
-        <div class="d-flex justify-content-between mt-4">
-            <button id="start-scan" class="btn btn-primary btn-custom">Start Scanning</button>
-            <button id="stop-scan" class="btn btn-danger btn-custom">Stop Scanning</button>
-        </div>
     </div>
 
     <!-- Success sound -->
@@ -95,13 +95,30 @@
 
     function startScanner() {
         html5QrCode = new Html5Qrcode("reader");
+
+        // 🟢 OVERRIDE scan region calculation
+        html5QrCode._qrRegion = function(viewfinderWidth, viewfinderHeight) {
+            let boxWidth = 200; // width of scan box
+            let boxHeight = 100; // height of scan box
+
+            return {
+                x: (viewfinderWidth - boxWidth) / 2,
+                y: (viewfinderHeight * 0.1) - (boxHeight / 2), // 30% from top
+                width: boxWidth,
+                height: boxHeight
+            };
+        };
+
         html5QrCode.start({
                 facingMode: "environment"
             }, {
                 fps: 10,
                 qrbox: {
-                    width: 300,
-                    height: 300
+                    width: 500,
+                    height: 100
+                }, // still required for size
+                experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true
                 }
             },
             onScanSuccess
@@ -136,12 +153,10 @@
         });
     }
 
-    $("#start-scan").click(startScanner);
-    $("#stop-scan").click(stopScanner);
-
     // Auto start scanner on page load
     startScanner();
     </script>
 </body>
+<?php include_once('layouts/footer.php'); ?>
 
 </html>

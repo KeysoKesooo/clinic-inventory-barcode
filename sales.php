@@ -2,39 +2,60 @@
 $page_title = 'All Records';
 require_once('includes/load.php');
 page_require_level(3);
+// Default query
+$query = "SELECT s.id, p.name, c.name AS category_name, s.qty, s.date, s.product_id
+          FROM sales s
+          LEFT JOIN products p ON s.product_id = p.id
+          LEFT JOIN categories c ON p.categorie_id = c.id
+          WHERE 1=1";
+
+// Apply filters if set
+if (isset($_GET['filter'])) {
+    $start_date = $_GET['start_date'] ?? '';
+    $end_date   = $_GET['end_date'] ?? '';
+
+    if (!empty($start_date) && !empty($end_date)) {
+        $query .= " AND DATE(s.date) BETWEEN '{$start_date}' AND '{$end_date}'";
+    } elseif (!empty($start_date)) {
+        $query .= " AND DATE(s.date) >= '{$start_date}'";
+    } elseif (!empty($end_date)) {
+        $query .= " AND DATE(s.date) <= '{$end_date}'";
+    }
+}
+
+$query .= " ORDER BY s.date DESC";
+
+$sales = find_by_sql($query);
+
 
 // Handle the edit sale form submission
 if(isset($_POST['edit_sale'])){
     $sale_id = (int)$db->escape($_POST['sale_id']);
     $quantity = (int)$db->escape($_POST['quantity']);
-    $price = $db->escape($_POST['price']);
-    $total = $db->escape($_POST['total']);
+
     $date = $db->escape($_POST['date']);
     $s_date = date("Y-m-d", strtotime($date));
 
-    $req_fields = array('quantity','price','total','date');
+    $req_fields = array('quantity','date');
     validate_fields($req_fields);
     
     if(empty($errors)){
-        // Get the existing sale record first
         $sale = find_by_id('sales', $sale_id);
         if(!$sale || !isset($sale['product_id'])){
             $session->msg("d","Invalid sale record.");
             redirect('sales.php');
         }
         
-        // Get the associated product
         $product = find_by_id('products', $sale['product_id']);
         if(!$product){
             $session->msg("d","Product not found.");
             redirect('sales.php');
         }
 
-$sql = "UPDATE sales SET";
-$sql .= " qty={$quantity}, price='{$price}', date='{$s_date}'";
-$sql .= " WHERE id ='{$sale_id}'";
+        $sql = "UPDATE sales SET";
+        $sql .= " qty={$quantity}, price='{$price}', date='{$s_date}'";
+        $sql .= " WHERE id ='{$sale_id}'";
 
-        
         $result = $db->query($sql);
         if($result && $db->affected_rows() === 1){
             update_product_qty($quantity, $product['id']);
@@ -50,7 +71,11 @@ $sql .= " WHERE id ='{$sale_id}'";
     }
 }
 
-$sales = find_all_sale();
+// 🔹 Only load all sales if no filter was applied
+if (!isset($_GET['filter'])) {
+    $sales = find_all_sale();
+}
+
 ?>
 
 <?php include_once('layouts/header.php'); ?>
@@ -85,6 +110,30 @@ $sales = find_all_sale();
                     <i class="fa-solid fa-download"></i>
                     <span class="export_button__text">Export</span>
                 </a>
+
+                <div class="filter-wrapper">
+                    <button class="toggle-filter-btn" data-target="custom-date-filter-container">Select
+                        Date</button>
+
+                    <!-- Date Filter Container -->
+                    <div id="custom-date-filter-container" class="filter-container">
+                        <form method="GET" action="" id="date-form">
+                            <div class="filter-group">
+                                <label for="start_date">Start Date:</label>
+                                <input type="date" id="start_date" name="start_date" class="date-input"
+                                    value="<?= isset($_GET['start_date']) ? $_GET['start_date'] : '' ?>" />
+                            </div>
+                            <div class="filter-group">
+                                <label for="end_date">End Date:</label>
+                                <input type="date" id="end_date" name="end_date" class="date-input"
+                                    value="<?= isset($_GET['end_date']) ? $_GET['end_date'] : '' ?>" />
+                            </div>
+                            <button type="submit" name="filter">Filter</button>
+                            <a href="sales.php" class="btn-clear">Clear Filter</a>
+                        </form>
+                    </div>
+                </div>
+
 
                 <div class="filter-wrapper">
                     <button class="toggle-filter-btn" data-target="sales-filter-container">Show Filters</button>
@@ -137,7 +186,7 @@ $sales = find_all_sale();
                 </a>
             </div>
 
-            <!-- Sales management table -->
+            <!-- Records management table -->
             <div class="table">
                 <div class="table-header">
                     <div class="header__item">No.</div>
@@ -162,8 +211,6 @@ $sales = find_all_sale();
                         <div class="table-data">
                             <button type="button" class="btn btn-warning edit-btn" data-id="<?= (int)$sale['id'] ?>"
                                 data-name="<?= remove_junk($sale['name']) ?>" data-qty="<?= (int)$sale['qty'] ?>"
-                                data-price="<?= remove_junk($sale['price']) ?>"
-                                data-total="<?= remove_junk($sale['price'] * $sale['qty']) ?>"
                                 data-date="<?= $sale['date'] ?>">
                                 <i class="glyphicon glyphicon-pencil"></i>
                             </button>
@@ -213,20 +260,37 @@ $sales = find_all_sale();
 
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Toggle filter visibility
-            const toggleFilterBtn = document.querySelector('.toggle-filter-btn');
-            const filterContainer = document.getElementById('sales-filter-container');
+            // ================================
+            // Handle multiple filter toggle buttons
+            // ================================
+            const toggleButtons = document.querySelectorAll('.toggle-filter-btn');
 
-            if (toggleFilterBtn && filterContainer) {
-                toggleFilterBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    filterContainer.classList.toggle('open');
-                    this.textContent = filterContainer.classList.contains('open') ? 'Hide Filters' :
-                        'Show Filters';
-                });
-            }
+            toggleButtons.forEach(btn => {
+                const targetId = btn.getAttribute('data-target');
+                const targetContainer = document.getElementById(targetId);
 
-            // Dropdown logic
+                if (targetContainer) {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        targetContainer.classList.toggle('open');
+
+                        // Change button text depending on open state
+                        if (targetId === 'sales-filter-container') {
+                            this.textContent = targetContainer.classList.contains('open') ?
+                                'Hide Filters' :
+                                'Show Filters';
+                        } else if (targetId === 'custom-date-filter-container') {
+                            this.textContent = targetContainer.classList.contains('open') ?
+                                'Hide Date' :
+                                'Select Date';
+                        }
+                    });
+                }
+            });
+
+            // ================================
+            // Category dropdown logic
+            // ================================
             const categorySelect = document.querySelector('#sales-filter-container .select');
             if (categorySelect) {
                 const categorySelected = categorySelect.querySelector('.selected');
@@ -240,7 +304,6 @@ $sales = find_all_sale();
                     categoryArrow.classList.toggle('open');
                 });
 
-                // FIXED: Use label's for attribute to find the corresponding input
                 categoryOptions.querySelectorAll('.option').forEach(option => {
                     option.addEventListener('click', function() {
                         const radioId = this.getAttribute('for');
@@ -282,11 +345,12 @@ $sales = find_all_sale();
                 });
             }
 
-            // Set default selected label
+            // Set default category label
             const categorySelectedSpan = document.querySelector('#sales-category-selected');
             if (categorySelectedSpan) {
                 categorySelectedSpan.textContent = 'All';
             }
+
 
 
             // ======================

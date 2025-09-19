@@ -175,6 +175,43 @@ body {
   opacity: 1;
 }
 
+/* Buttons */
+#date-form button[type="submit"] {
+  background: #007bff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-right: 8px;
+}
+
+#date-form button[type="submit"]:hover {
+  background: #0056b3;
+}
+
+/* Clear filter link styled as button */
+#date-form .btn-clear {
+  display: inline-block;
+  background: #f8f9fa;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 7px 14px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+#date-form .btn-clear:hover {
+  background: #e2e6ea;
+  border-color: #bbb;
+}
+
 
 /* From Uiverse.io by andrew-demchenk0 */
 .download-button {
@@ -770,6 +807,61 @@ body {
 
 /* Styles for the text */
 .export_button__text {
+  font-size: 1rem; /* Matches the button's font size */
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+
+/* Base styles for import_button */
+.import_button {
+  display: flex;
+  align-items: center;
+  padding: 15px 25px; /* Increased padding */
+  background-color: #27AE60;
+  color: #ffffff;
+  font-size: 1rem; /* Increased font size */
+  line-height: 1.25rem; /* Adjusted line height */
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  vertical-align: middle;
+  border: none;
+  border-radius: 0.75rem; /* Slightly larger border radius */
+  gap: 1rem; /* Increased gap between icon and text */
+  cursor: pointer;
+  user-select: none;
+  box-shadow:
+    0 4px 6px -1px #FBFFE4,
+    0 2px 4px -1px #690B22;
+  text-decoration: none; /* No underline on normal state */
+  transition: all 0.6s ease;
+}
+
+/* Remove underline on hover */
+.import_button:hover {
+  box-shadow:
+    0 10px 15px -3px #B3D8A8,
+    0 4px 6px -2px #690B22;
+  text-decoration: none; /* Ensures no underline on hover */
+}
+
+.import_button:focus,
+.import_button:active {
+  opacity: 0.85;
+  box-shadow: none;
+  text-decoration: none; /* Ensure no underline when focused or active */
+}
+
+/* Styles for the icon */
+.import_button__icon {
+  width: 1.5rem; /* Increased icon size */
+  height: 1.5rem; /* Increased icon size */
+  display: inline-block;
+}
+
+/* Styles for the text */
+.import_button__text {
   font-size: 1rem; /* Matches the button's font size */
   font-weight: 700;
   text-transform: uppercase;

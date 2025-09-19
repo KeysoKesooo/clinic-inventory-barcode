@@ -9,7 +9,7 @@ $all_photo = find_all('media');
 
 // EDIT PRODUCT LOGIC — run only if editing
 if (isset($_POST['edit_product'])) {
-    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-description');
+    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-description', 'product-expiration-date');
     validate_fields($req_fields);
 
     if (empty($errors)) {
@@ -19,6 +19,7 @@ if (isset($_POST['edit_product'])) {
         $p_qty     = remove_junk($db->escape($_POST['product-quantity']));
         $p_dosage  = remove_junk($db->escape($_POST['product-dosage']));
         $p_desc    = remove_junk($db->escape($_POST['product-description']));
+        $p_exp     = remove_junk($db->escape($_POST['product-expiration-date']));
 
         // === Duplicate check ===
         $check_sql = "SELECT id FROM products WHERE name = '{$p_name}' AND id != {$id} LIMIT 1";
@@ -51,7 +52,7 @@ if (isset($_POST['edit_product'])) {
 
         $query  = "UPDATE products SET ";
         $query .= "name='{$p_name}', quantity='{$p_qty}', dosage='{$p_dosage}', description='{$p_desc}', ";
-        $query .= "categorie_id='{$p_cat}', product_photo='{$product_photo}' ";
+        $query .= "categorie_id='{$p_cat}', product_photo='{$product_photo}', expiration_date='{$p_exp}' ";
         $query .= "WHERE id='{$id}'";
 
         if ($db->query($query) && $db->affected_rows() === 1) {
@@ -68,12 +69,9 @@ if (isset($_POST['edit_product'])) {
 }
 
 
-
-
-
 // ADD PRODUCT LOGIC — run only if adding
 if (isset($_POST['add_product'])) {
-    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-description');
+    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-description', 'product-expiration-date');
     validate_fields($req_fields);
 
     if (empty($errors)) {
@@ -82,6 +80,7 @@ if (isset($_POST['add_product'])) {
         $p_qty    = remove_junk($db->escape($_POST['product-quantity']));
         $p_dosage = remove_junk($db->escape($_POST['product-dosage']));
         $p_desc   = remove_junk($db->escape($_POST['product-description']));
+        $p_exp    = remove_junk($db->escape($_POST['product-expiration-date']));
         $date     = make_date();
 
         // === Duplicate check ===
@@ -108,8 +107,8 @@ if (isset($_POST['add_product'])) {
             }
         }
 
-        $query  = "INSERT INTO products (name, quantity, dosage, description, categorie_id, product_photo, date) ";
-        $query .= "VALUES ('{$p_name}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$p_cat}', '{$photo_name}', '{$date}')";
+        $query  = "INSERT INTO products (name, quantity, dosage, description, categorie_id, product_photo, expiration_date, date) ";
+        $query .= "VALUES ('{$p_name}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$p_cat}', '{$photo_name}', '{$p_exp}', '{$date}')";
 
         if ($db->query($query)) {
             $session->msg('s', "Product added");
@@ -123,7 +122,7 @@ if (isset($_POST['add_product'])) {
         redirect('product.php', false);
     }
 }
-
+// IMPORT PRODUCTS LOGIC — run only if importing
 
 if (isset($_POST['import_products'])) {
     $csv_file = $_FILES['csv_file']['tmp_name'];
@@ -145,18 +144,20 @@ if (isset($_POST['import_products'])) {
         fgetcsv($handle);
 
         while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-            if (!isset($data[0], $data[1], $data[2], $data[3], $data[4])) {
+            // Require at least 6 columns
+            if (!isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5])) {
                 $error_count++;
                 $errors[] = "Missing required fields in CSV row";
                 continue;
             }
 
-            $p_name       = remove_junk($db->escape($data[0]));
+            $p_name        = remove_junk($db->escape($data[0]));
             $category_name = remove_junk($db->escape($data[1]));
-            $p_qty        = (int)$db->escape($data[2]);
-            $p_dosage     = remove_junk($db->escape($data[3]));
-            $p_desc       = remove_junk($db->escape($data[4]));
-            $date         = make_date();
+            $p_qty         = (int)$db->escape($data[2]);
+            $p_dosage      = remove_junk($db->escape($data[3]));
+            $p_desc        = remove_junk($db->escape($data[4]));
+            $p_exp         = remove_junk($db->escape($data[5])); // <-- New field
+            $date          = make_date();
 
             // Duplicate check by product title
             $check_sql = "SELECT id FROM products WHERE name='{$p_name}' LIMIT 1";
@@ -179,9 +180,9 @@ if (isset($_POST['import_products'])) {
             $cat_row = $db->fetch_assoc($cat_res);
             $p_cat = (int)$cat_row['id'];
 
-            // Insert product
-            $query  = "INSERT INTO products (name, categorie_id, quantity, dosage, description, date) ";
-            $query .= "VALUES ('{$p_name}', '{$p_cat}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$date}')";
+            // Insert product with expiration_date
+            $query  = "INSERT INTO products (name, categorie_id, quantity, dosage, description, expiration_date, date) ";
+            $query .= "VALUES ('{$p_name}', '{$p_cat}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$p_exp}', '{$date}')";
 
             if ($db->query($query)) {
                 $success_count++;
@@ -215,6 +216,7 @@ if (isset($_POST['import_products'])) {
     redirect('product.php', false);
 }
 
+
 ?>
 
 
@@ -240,7 +242,7 @@ if (isset($_POST['import_products'])) {
     <div class="product-container">
         <div class="action-buttons-container">
             <div class="search-bar-container">
-                <input type="text" id="search-bar-products" class="search-bar" placeholder="Search product...">
+                <input type="text" id="search-bar-products" class="search-bar" placeholder="Search medicine...">
             </div>
 
             <a class="export_button" id="download-btn-products">
@@ -248,9 +250,9 @@ if (isset($_POST['import_products'])) {
                 <span class="export_button__text">Export</span>
             </a>
 
-            <a class="export_button" id="openPopup-products">
+            <a class="import_button" id="openPopup-products">
                 <i class="fa-solid fa-upload"></i>
-                <span class="export_button__text">Import</span>
+                <span class="import_button__text">Import</span>
             </a>
 
             <!-- Import Popup Form -->
@@ -264,7 +266,7 @@ if (isset($_POST['import_products'])) {
                         </div>
                         <div>
                             <button type="submit" name="import_products" class="editpopup_btn"
-                                style="margin-left: 180px">Import Products</button>
+                                style="margin-left: 180px">Import Medicines</button>
                         </div>
                     </form>
                 </div>
@@ -341,7 +343,7 @@ if (isset($_POST['import_products'])) {
                     <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2" stroke="#ffffff"
                         d="M17 15V18M17 21V18M17 18H14M17 18H20"></path>
                 </svg>
-                <span class="add_button__text">Add Product</span>
+                <span class="add_button__text">Add Medicine</span>
             </a>
         </div>
 
@@ -350,11 +352,12 @@ if (isset($_POST['import_products'])) {
             <div class="table-header">
                 <div class="header__item">No.</div>
                 <div class="header__item">Photo</div>
-                <div class="header__item">Product Title</div>
+                <div class="header__item">Medicine Title</div>
                 <div class="header__item">Dosage</div>
                 <div class="header__item">Description</div>
                 <div class="header__item">Categories</div>
                 <div class="header__item">In-Stock</div>
+                <div class="header__item">Expiration Date</div>
                 <div class="header__item">Product Added</div>
                 <div class="header__item">Actions</div>
             </div>
@@ -391,7 +394,8 @@ if (isset($_POST['import_products'])) {
                         <span class="label label-danger">Out of stock</span>
                         <?php endif; ?>
                     </div>
-                    <div class="table-data"><?php echo read_date($product['date']); ?></div>
+                    <div class="table-data"><?php echo date('d-m-Y', strtotime($product['expiration_date'])); ?></div>
+                    <div class="table-data"><?php echo date('m-d-Y', strtotime($product['date'])); ?></div>
                     <div class="table-data">
                         <button type="button" class="btn btn-warning edit-btn" data-id="<?php echo $product['id']; ?>">
                             <i class="glyphicon glyphicon-pencil"></i>
@@ -399,7 +403,7 @@ if (isset($_POST['import_products'])) {
 
                         <a href="delete_product.php?id=<?php echo (int)$product['id']; ?>" class="btn btn-danger"
                             onclick="return confirmDelete(event)">
-                            <i class="glyphicon glyphicon-remove"></i>
+                            <i class="glyphicon glyphicon-trash"></i>
                         </a>
 
                         <!-- Barcode Button -->
@@ -423,7 +427,7 @@ if (isset($_POST['import_products'])) {
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Product Barcode</h4>
+                <h4 class="modal-title">Medicine Barcode</h4>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
 
@@ -457,10 +461,10 @@ if (isset($_POST['import_products'])) {
         <div class="container">
             <form method="post" action="product.php" class="form_area" enctype="multipart/form-data">
                 <span class="close-modal" data-dismiss="modal">&times;</span>
-                <div class="title">Add New Product</div>
+                <div class="title">Add New Medicine</div>
 
                 <div class="form_group">
-                    <label for="product-title">Product Title</label>
+                    <label for="product-title">Medicine Title</label>
                     <input class="form_style" type="text" name="product-title" id="product-title"
                         placeholder="Product Title" required>
                 </div>
@@ -476,7 +480,7 @@ if (isset($_POST['import_products'])) {
                 </div>
 
                 <div class="form_group">
-                    <label for="product-photo">Product Photo</label>
+                    <label for="product-photo">Medicine Photo</label>
                     <input class="form_style" type="file" name="product-photo" id="product-photo" accept="image/*">
                 </div>
 
@@ -493,12 +497,18 @@ if (isset($_POST['import_products'])) {
                 </div>
 
                 <div class="form_group">
+                    <label for="product-expiration">Expiration Date</label>
+                    <input class="form_style" type="date" name="product-expiration-date" id="product-expiration"
+                        placeholder="e.g. 2023-12-31" required>
+                </div>
+
+                <div class="form_group">
                     <label for="product-description">Description</label>
                     <textarea class="form_style" name="product-description" id="product-description"
                         placeholder="Enter product description" rows="3" required></textarea>
                 </div>
 
-                <button type="submit" name="add_product" class="form_btn">Add Product</button>
+                <button type="submit" name="add_product" class="form_btn">Add Medicine</button>
             </form>
         </div>
     </div>
@@ -517,14 +527,14 @@ if (isset($_POST['import_products'])) {
                 <input type="hidden" name="id" id="edit-product-id">
 
                 <div class="form_group">
-                    <label for="edit-product-title">Product Title</label>
+                    <label for="edit-product-title">Medicine Title</label>
                     <input class="form_style" type="text" name="product-title" id="edit-product-title" required>
                 </div>
 
                 <div class="form_group">
                     <label for="edit-product-categorie">Category</label>
                     <select class="form_style" name="product-categorie" id="edit-product-categorie" required>
-                        <option value="">Select Product Category</option>
+                        <option value="">Select Medicine Category</option>
                         <?php foreach ($all_categories as $cat): ?>
                         <option value="<?php echo (int)$cat['id']; ?>"><?php echo $cat['name']; ?></option>
                         <?php endforeach; ?>
@@ -532,7 +542,7 @@ if (isset($_POST['import_products'])) {
                 </div>
 
                 <div class="form_group">
-                    <label for="edit-product-photo">Product Photo</label>
+                    <label for="edit-product-photo">Medicine Photo</label>
                     <input class="form_style" type="file" name="product-photo" id="edit-product-photo" accept="image/*">
                     <!-- Optional: show current filename -->
                     <small id="current-photo-name" class="text-muted"></small>
@@ -550,12 +560,19 @@ if (isset($_POST['import_products'])) {
                 </div>
 
                 <div class="form_group">
+                    <label for="edit-product-expiration">Expiration Date</label>
+                    <input class="form_style" type="date" name="product-expiration-date" id="edit-product-expiration"
+                        placeholder="e.g., 2023-12-31" required>
+                </div>
+
+
+                <div class="form_group">
                     <label for="edit-product-description">Description</label>
                     <textarea class="form_style" name="product-description" id="edit-product-description" rows="3"
                         placeholder="Product description..." required></textarea>
                 </div>
 
-                <button type="submit" name="edit_product" class="form_btn">Update Product</button>
+                <button type="submit" name="edit_product" class="form_btn">Update Medicine</button>
             </form>
         </div>
     </div>

@@ -206,9 +206,9 @@ if (isset($_POST['import_users'])) {
                 <span class="export_button__text">Export</span>
             </a>
 
-            <a class="export_button" id="openPopup">
+            <a class="import_button" id="openPopup">
                 <i class="fa-solid fa-upload"></i>
-                <span class="export_button__text">Import</span>
+                <span class="import_button__text">Import</span>
             </a>
 
             <!-- Popup Form -->
@@ -341,7 +341,7 @@ if (isset($_POST['import_users'])) {
 
                         <a href="delete_user.php?id=<?php echo (int)$user['id']; ?>" class="btn btn-danger"
                             onclick="return confirmDelete(event)">
-                            <i class="glyphicon glyphicon-remove"></i>
+                            <i class="glyphicon glyphicon-trash"></i>
 
                         </a>
                     </div>

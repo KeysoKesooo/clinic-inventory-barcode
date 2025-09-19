@@ -4,12 +4,8 @@
 Username: GraceAdmin
 Password: admin
 
-**Special User Login Details**
+**Staff Login Details**
 
 Username: special
 Password: special
 
-**User(Employee) Login Details**
-
-Username: user
-Password: user 

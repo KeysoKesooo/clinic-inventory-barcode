@@ -19,10 +19,10 @@
     <li>
         <a href="#" class="submenu-toggle">
             <i class="glyphicon glyphicon-th-large"></i>
-            <span>Products</span>
+            <span>Medicines</span>
         </a>
         <ul class="nav submenu">
-            <li><a href="product.php">Manage Products</a> </li>
+            <li><a href="product.php">Manage Medicines</a> </li>
         </ul>
     </li>
     <li>

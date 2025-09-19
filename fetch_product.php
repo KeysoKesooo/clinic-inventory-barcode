@@ -70,7 +70,7 @@ $("#sale-form").submit(function(e) {
 
 function cancelSale() {
     $("#sale-form-container").html(
-        "<div class='alert alert-warning fs-5 fw-bold text-center py-3'>✖ Sale cancelled. Ready to scan again.</div>"
+        "<div class='alert alert-warning fs-5 fw-bold text-center py-3'>✖ Record cancelled. Ready to scan again.</div>"
     );
     setTimeout(() => {
         startScanner();

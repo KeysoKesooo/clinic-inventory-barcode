@@ -215,7 +215,7 @@ function join_product_table($conditions = array(), $order_by = 'p.id DESC', $lim
     
     // Updated SELECT with dosage & description
     $sql  = "SELECT p.id, p.name, p.dosage, p.description, p.quantity, 
-                    p.categorie_id, p.product_photo, p.date, 
+                    p.categorie_id, p.product_photo, p.date, p.expiration_date,
                     c.name AS categorie
             FROM products p
             LEFT JOIN categories c ON c.id = p.categorie_id";
