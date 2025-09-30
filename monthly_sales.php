@@ -86,7 +86,7 @@
                 <?php foreach ($sales as $month => $entries): ?>
                 <details class="monthly-group">
                     <summary>
-                        <strong><?php echo $month; ?></strong> (<?php echo count($entries); ?>)
+                        <strong><?php echo $month; ?></strong> (<?php echo count($entries) ?>)
                     </summary>
                     <div class="table month-sales-table">
                         <?php 
