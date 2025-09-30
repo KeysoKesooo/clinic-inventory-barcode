@@ -6,7 +6,7 @@ This system allows scanning barcodes to manage stock in and stock out operations
 ## Features
 
 - Scan product barcode to retrieve product information
-- Deduct stock quantity manually after scanning
+- Deduct stock / Restock quantity manually after scanning
 - Show product photo and details upon scan
 - Confirmation and cancel buttons for safe stock updates
 - Inventory listing with quantities
