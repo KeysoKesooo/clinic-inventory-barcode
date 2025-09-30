@@ -3,7 +3,8 @@ require_once('includes/load.php');
 
 if (isset($_POST['product_id'])) {
     $product_id = $db->escape($_POST['product_id']);
-    $product = find_by_id('products', $product_id);
+    $mode       = $_POST['mode'] ?? 'sale';   // get mode from AJAX
+    $product    = find_by_id('products', $product_id);
 
     if (!$product) {
         echo "<div class='alert alert-danger fw-bold fs-5 text-center py-3'>❌ Product not found.</div>";
@@ -12,6 +13,9 @@ if (isset($_POST['product_id'])) {
 
     // Get product photo from products table
     $photo = !empty($product['product_photo']) ? $product['product_photo'] : "no_image.png";
+
+    // Decide which PHP file to use
+    $targetFile = ($mode === 'restock') ? "record_restock.php" : "record_sale.php";
 ?>
 <div class="product-card shadow-lg p-3">
     <!-- Product photo -->
@@ -23,8 +27,8 @@ if (isset($_POST['product_id'])) {
         <span class="badge bg-info text-dark fs-6"><?php echo (int)$product['quantity']; ?></span>
     </p>
 
-    <!-- Sale form -->
-    <form id="sale-form" class="mt-3">
+    <!-- Sale/Restock form -->
+    <form id="product-form" class="mt-3">
         <input type="hidden" name="s_id" value="<?php echo (int)$product['id']; ?>">
 
         <div class="mb-3 text-start">
@@ -39,36 +43,35 @@ if (isset($_POST['product_id'])) {
 
         <div class="d-flex justify-content-between mt-4">
             <button type="submit" class="btn btn-success btn-lg px-4 fw-bold">✔ Confirm</button>
-            <button type="button" class="btn btn-outline-secondary btn-lg px-4 fw-bold" onclick="cancelSale()">✖
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4 fw-bold" onclick="cancelRecord()">✖
                 Cancel</button>
         </div>
     </form>
 
-    <div id="sale-result" class="mt-4"></div>
+    <div id="form-result" class="mt-4"></div>
 </div>
 
 <script>
-$("#sale-form").submit(function(e) {
+$("#product-form").submit(function(e) {
     e.preventDefault();
-    $.post("record_sale.php", $(this).serialize(), function(response) {
-        // Style response message
+    $.post("<?php echo $targetFile; ?>", $(this).serialize(), function(response) {
         if (response.includes("✅")) {
-            $("#sale-result").html('<div class="alert alert-success fs-5 fw-bold py-3 text-center">' +
+            $("#form-result").html('<div class="alert alert-success fs-5 fw-bold py-3 text-center">' +
                 response + '</div>');
             setTimeout(() => {
                 startScanner();
             }, 2000);
         } else if (response.includes("❌")) {
-            $("#sale-result").html('<div class="alert alert-danger fs-5 fw-bold py-3 text-center">' +
+            $("#form-result").html('<div class="alert alert-danger fs-5 fw-bold py-3 text-center">' +
                 response + '</div>');
         } else {
-            $("#sale-result").html('<div class="alert alert-warning fs-5 fw-bold py-3 text-center">' +
+            $("#form-result").html('<div class="alert alert-warning fs-5 fw-bold py-3 text-center">' +
                 response + '</div>');
         }
     });
 });
 
-function cancelSale() {
+function cancelRecord() {
     $("#sale-form-container").html(
         "<div class='alert alert-warning fs-5 fw-bold text-center py-3'>✖ Record cancelled. Ready to scan again.</div>"
     );

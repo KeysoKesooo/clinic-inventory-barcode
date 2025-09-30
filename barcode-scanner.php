@@ -10,7 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Sales Scanner</title>
+    <title>Barcode Scanner</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -57,7 +57,6 @@
     .scanner-overlay {
         position: absolute;
         top: 30%;
-        /* shifted upward */
         left: 50%;
         width: 80%;
         height: 100px;
@@ -72,6 +71,17 @@
 </head>
 
 <body>
+
+    <!-- Tabs for mode selection -->
+    <ul class="nav nav-tabs mb-3 d-flex" id="modeTabs" style="width:100%; height: 50px; font-size: large;">
+        <li class="nav-item flex-fill text-center">
+            <a class="nav-link active w-100" href="#" data-mode="sale">💊 Dispense</a>
+        </li>
+        <li class="nav-item flex-fill text-center">
+            <a class="nav-link w-100" href="#" data-mode="restock">📦 Restock</a>
+        </li>
+    </ul>
+
 
     <div class="scanner-container text-center">
         <h3 class="mb-3">📷 Scan Medicine Barcode</h3>
@@ -90,6 +100,16 @@
     <audio id="scanSound" src="ding.mp3" preload="auto"></audio>
 
     <script>
+    let currentMode = "sale"; // default mode
+
+    // 🔹 Tab switching
+    $("#modeTabs .nav-link").on("click", function(e) {
+        e.preventDefault();
+        $("#modeTabs .nav-link").removeClass("active");
+        $(this).addClass("active");
+        currentMode = $(this).data("mode");
+    });
+
     let html5QrCode;
     let isScanning = false;
 
@@ -98,12 +118,12 @@
 
         // 🟢 OVERRIDE scan region calculation
         html5QrCode._qrRegion = function(viewfinderWidth, viewfinderHeight) {
-            let boxWidth = 200; // width of scan box
-            let boxHeight = 100; // height of scan box
+            let boxWidth = 200;
+            let boxHeight = 100;
 
             return {
                 x: (viewfinderWidth - boxWidth) / 2,
-                y: (viewfinderHeight * 0.1) - (boxHeight / 2), // 30% from top
+                y: (viewfinderHeight * 0.1) - (boxHeight / 2),
                 width: boxWidth,
                 height: boxHeight
             };
@@ -116,7 +136,7 @@
                 qrbox: {
                     width: 500,
                     height: 100
-                }, // still required for size
+                },
                 experimentalFeatures: {
                     useBarCodeDetectorIfSupported: true
                 }
@@ -143,9 +163,10 @@
         stopScanner();
         document.getElementById("scanSound").play();
 
-        // Fetch product info and show sale form
+        // 🔹 Use the currentMode (sale or restock)
         $.post("fetch_product.php", {
-            product_id: decodedText
+            product_id: decodedText,
+            mode: currentMode
         }, function(response) {
             $('#sale-form-container').html(response);
         }).fail(function(xhr) {

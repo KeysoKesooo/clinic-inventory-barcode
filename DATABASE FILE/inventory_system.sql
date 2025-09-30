@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 19, 2025 at 07:25 AM
+-- Generation Time: Sep 29, 2025 at 03:08 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -85,10 +85,12 @@ INSERT INTO `products` (`id`, `name`, `product_photo`, `quantity`, `buy_price`, 
 (35, 'Paracetamol', NULL, '50', NULL, 0.00, 14, 0, '2025-09-15 12:35:32', NULL, '500mg', 'Reduces headache and fever'),
 (36, 'Aspirin', NULL, '30', NULL, 0.00, 14, 0, '2025-09-15 12:35:32', NULL, '100mg', 'Relieves mild pain and inflammation'),
 (37, 'Bisolvon', NULL, '40', NULL, 0.00, 12, 0, '2025-09-15 12:35:32', NULL, '5ml', 'Helps to loosen mucus in the airways'),
-(38, 'Amoxicillin', NULL, '25', NULL, 0.00, 13, 0, '2025-09-15 12:35:32', NULL, '250mg', 'Antibiotic for bacterial infections'),
-(39, 'Vicks Vaporub', NULL, '60', NULL, 0.00, 12, 0, '2025-09-15 12:35:32', NULL, '10g', 'Relieves cough and congestion'),
-(40, 'Coldrex', NULL, '34', NULL, 0.00, 13, 0, '2025-09-15 12:35:32', NULL, '500mg', 'Reduces cold symptoms and fever'),
-(41, 'Panadol', NULL, '43', NULL, 0.00, 14, 0, '2025-09-15 12:35:32', NULL, '500mg', 'Pain relief for headaches');
+(38, 'Amoxicillin', '', '25', NULL, 0.00, 13, 0, '2025-09-15 12:35:32', '2025-09-11 00:00:00', '250mg', 'Antibiotic for bacterial infections'),
+(39, 'Vicks Vaporub', '', '60', NULL, 0.00, 12, 0, '2025-09-15 12:35:32', '2025-09-24 00:00:00', '10g', 'Relieves cough and congestion'),
+(41, 'Panadol', '', '43', NULL, 0.00, 14, 0, '2025-09-15 12:35:32', '2025-09-21 00:00:00', '500mg', 'Pain relief for headaches'),
+(43, 'Yakap', '', '50', NULL, 0.00, 14, 0, '2025-09-19 09:24:24', '2025-10-04 00:00:00', '500mg', 'Reduces headache and fever'),
+(44, 'test', '', '10', NULL, 0.00, 14, 0, '2025-09-29 14:16:05', '2025-10-03 00:00:00', '10mg', 'test1'),
+(48, 'test', '', '10', NULL, 0.00, 13, 0, '2025-09-29 15:07:47', '2025-10-11 00:00:00', '500mg', '');
 
 -- --------------------------------------------------------
 
@@ -114,7 +116,6 @@ INSERT INTO `sales` (`id`, `product_id`, `qty`, `price`, `date`) VALUES
 (32, 17, 10, 0.00, '2025-08-24'),
 (33, 17, 1, 0.00, '2025-08-24'),
 (34, 17, 1, 0.00, '2025-08-24'),
-(35, 40, 1, 0.00, '2025-09-15'),
 (36, 41, 1, 0.00, '2025-09-15'),
 (37, 41, 1, 0.00, '2025-09-15');
 
@@ -141,7 +142,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `username`, `password`, `user_level`, `image`, `status`, `last_login`) VALUES
 (2, 'dyan Walker', 'special', 'ba36b97a41e7faf742ab09bf88405ac04f99599a', 2, 'no_image.png', 1, '2021-04-04 19:53:26'),
-(9, 'Grace Ortilliano', 'AdminGrace', '$2y$10$EwCk9DUA3q6nK3IasZc7hOu3xL9S8odIYqIhJ6sEt2BlL8zVChREK', 1, 'no_image.png', 1, '2025-09-19 06:42:47'),
+(9, 'Grace Ortilliano', 'AdminGrace', '$2y$10$EwCk9DUA3q6nK3IasZc7hOu3xL9S8odIYqIhJ6sEt2BlL8zVChREK', 1, 'no_image.png', 1, '2025-09-29 15:01:51'),
 (11, 'Gracia Jeff', 'GraceAdmin', '$2y$10$WT3qcklkBsv8kRNyGcVSvu49kIYr/qvw6zM6eacHBdpb9aPXgNAUa', 1, 'no_image.png', 1, '2025-09-15 10:33:40'),
 (12, 'Ruel  Weng', 'Nurse', '$2y$10$m1JpYXnYngz6xuV2EucF7unAAah9ZgVNAShyW3nIfcVXuyZ10tshi', 2, 'no_image.png', 1, '2025-08-12 09:47:08'),
 (13, 'try patingin', 'try', '$2y$10$ABfsXYHbRbUHRA/5zM/iw.C3LCqgMr7j65rNlwPfnRE3FW7NtnTFO', 1, 'no_image.png', 1, NULL),
@@ -211,8 +212,6 @@ ALTER TABLE `media`
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`),
-  ADD UNIQUE KEY `name_2` (`name`),
   ADD KEY `categorie_id` (`categorie_id`),
   ADD KEY `media_id` (`media_id`);
 
@@ -257,7 +256,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `sales`

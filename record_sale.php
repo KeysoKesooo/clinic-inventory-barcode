@@ -16,7 +16,7 @@ if (isset($_POST['s_id'], $_POST['quantity'], $_POST['date'])) {
     $sql = "INSERT INTO sales (product_id, qty, date) VALUES ('{$p_id}', '{$s_qty}', '{$s_date}')";
     if ($db->query($sql)) {
         update_product_qty($s_qty, $p_id);
-        echo "<div class='alert alert-success'>✅ Sale recorded successfully.</div>";
+        echo "<div class='alert alert-success'>✅ Recorded successfully.</div>";
     } else {
         echo "<div class='alert alert-danger'>❌ Failed to record sale.</div>";
     }

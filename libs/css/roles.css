@@ -175,6 +175,27 @@ body {
   opacity: 1;
 }
 
+/* Group each label + input vertically */
+#date-form .filter-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px; /* space between fields */
+}
+
+#date-form label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+#date-form .date-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+
 /* Buttons */
 #date-form button[type="submit"] {
   background: #007bff;

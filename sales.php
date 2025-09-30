@@ -103,7 +103,7 @@ if (!isset($_GET['filter'])) {
         <div class="sales-container">
             <div class="action-buttons-container">
                 <div class="search-bar-container">
-                    <input type="text" id="search-bar-sales" class="search-bar" placeholder="Search sales...">
+                    <input type="text" id="search-bar-sales" class="search-bar" placeholder="Search records...">
                 </div>
 
                 <a class="export_button" id="download-btn">

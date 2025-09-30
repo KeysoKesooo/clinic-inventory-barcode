@@ -28,14 +28,6 @@ if (isset($_POST['edit_product'])) {
             redirect("product.php?id={$id}", false);
         }
 
-        // === Duplicate check ===
-        $check_sql = "SELECT id FROM products WHERE name = '{$p_name}' AND id != {$id} LIMIT 1";
-        $check_res = $db->query($check_sql);
-        if ($db->num_rows($check_res) > 0) {
-            $session->msg('d', "Another product with the name '{$p_name}' already exists!");
-            redirect("product.php?id={$id}", false);
-        }
-
         // Fetch current product to keep existing photo if no new file is uploaded
         $sql = "SELECT product_photo FROM products WHERE id='{$id}' LIMIT 1";
         $result = $db->query($sql);
@@ -95,14 +87,6 @@ if (isset($_POST['add_product'])) {
             redirect('product.php', false);
         }
 
-        // === Duplicate check ===
-        $check_sql = "SELECT id FROM products WHERE name = '{$p_name}' LIMIT 1";
-        $check_res = $db->query($check_sql);
-        if ($db->num_rows($check_res) > 0) {
-            $session->msg('d', "Product '{$p_name}' already exists!");
-            redirect('product.php', false);
-        }
-
         // Handle File Upload
         $photo_name = '';
         if (!empty($_FILES['product-photo']['name'])) {
@@ -123,7 +107,7 @@ if (isset($_POST['add_product'])) {
         $query .= "VALUES ('{$p_name}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$p_cat}', '{$photo_name}', '{$p_exp}', '{$date}')";
 
         if ($db->query($query)) {
-            $session->msg('s', "Product added");
+            $session->msg('s', "Medicine added");
             redirect('product.php', false);
         } else {
             $session->msg('d', 'Sorry, failed to add!');
@@ -145,7 +129,6 @@ if (isset($_POST['import_products'])) {
     }
 
     $success_count = 0;
-    $duplicate_count = 0;
     $error_count = 0;
     $errors = [];
 
@@ -174,16 +157,8 @@ if (isset($_POST['import_products'])) {
             // === Expiration check ===
             if (strtotime($p_exp) < strtotime(date("Y-m-d"))) {
                 $error_count++;
-                $errors[] = "Product '{$p_name}' has expired date ({$p_exp}). Skipped.";
+                $errors[] = "Medicine '{$p_name}' has expired date ({$p_exp}). Skipped.";
                 continue; // Skip importing this row
-            }
-
-            // Duplicate check by product title
-            $check_sql = "SELECT id FROM products WHERE name='{$p_name}' LIMIT 1";
-            $check_res = $db->query($check_sql);
-            if ($db->num_rows($check_res) > 0) {
-                $duplicate_count++;
-                continue; // Skip this row
             }
 
             // Get category ID by name
@@ -192,7 +167,7 @@ if (isset($_POST['import_products'])) {
 
             if ($db->num_rows($cat_res) == 0) {
                 $error_count++;
-                $errors[] = "Category '{$category_name}' does not exist for product '{$p_name}'";
+                $errors[] = "Category '{$category_name}' does not exist for medicine '{$p_name}'";
                 continue;
             }
 
@@ -215,12 +190,11 @@ if (isset($_POST['import_products'])) {
 
         if ($error_count == 0) {
             $db->query("COMMIT");
-            $session->msg('s', "Successfully imported {$success_count} products. Duplicates skipped: {$duplicate_count}");
+            $session->msg('s', "Successfully imported {$success_count} medicines.");
         } else {
             $db->query("ROLLBACK");
             $error_msg = "Import completed with issues:<br>";
             $error_msg .= "- Successfully processed: {$success_count}<br>";
-            $error_msg .= "- Duplicates skipped: {$duplicate_count}<br>";
             $error_msg .= "- Errors encountered: {$error_count}<br>";
             $error_msg .= "First 5 errors:<br>" . implode("<br>", array_slice($errors, 0, 5));
             if (count($errors) > 5) {
@@ -234,10 +208,6 @@ if (isset($_POST['import_products'])) {
 
     redirect('product.php', false);
 }
-
-
-
-
 ?>
 
 
@@ -526,7 +496,7 @@ if (isset($_POST['import_products'])) {
                 <div class="form_group">
                     <label for="product-description">Description</label>
                     <textarea class="form_style" name="product-description" id="product-description"
-                        placeholder="Enter product description" rows="3" required></textarea>
+                        placeholder="Enter product description" rows="3"></textarea>
                 </div>
 
                 <button type="submit" name="add_product" class="form_btn">Add Medicine</button>
@@ -590,7 +560,7 @@ if (isset($_POST['import_products'])) {
                 <div class="form_group">
                     <label for="edit-product-description">Description</label>
                     <textarea class="form_style" name="product-description" id="edit-product-description" rows="3"
-                        placeholder="Product description..." required></textarea>
+                        placeholder="Product description..."></textarea>
                 </div>
 
                 <button type="submit" name="edit_product" class="form_btn">Update Medicine</button>
