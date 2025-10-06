@@ -3,9 +3,8 @@ $page_title = 'Daily Records';
 require_once('includes/load.php');
 page_require_level(3);
 
-$year = date('Y');
-$month = date('m');
-$sales = dailySales($year, $month);
+$sales = dailySales();
+
 ?>
 
 <?php include_once('layouts/header.php'); ?>
@@ -85,24 +84,41 @@ $sales = dailySales($year, $month);
             <div class="table">
                 <div class="table-header">
                     <div class="header__item">No.</div>
-                    <div class="header__item">Product Name</div>
-                    <div class="header__item">Category</div>
+                    <div class="header__item">Generic Name</div>
+                    <div class="header__item">Issued To</div>
+                    <div class="header__item">Issued By</div>
                     <div class="header__item">Quantity</div>
                     <div class="header__item">Date</div>
+                    <div class="header__item">Status</div>
                 </div>
+
 
                 <?php foreach($sales as $sale): ?>
                 <div class="table-row" data-id="<?php echo (int)$sale['id']; ?>"
                     data-category="<?php echo isset($sale['category_name']) ? htmlspecialchars($sale['category_name']) : 'Uncategorized'; ?>">
 
                     <div class="table-data"><?php echo count_id(); ?></div>
-                    <div class="table-data"><?php echo remove_junk($sale['name']); ?></div>
-                    <div class="table-data"><?php echo remove_junk($sale['category_name']); ?></div> <!-- ✅ ADD THIS -->
+                    <div class="table-data"><?php echo remove_junk($sale['product_name']); ?></div>
+                    <div class="table-data"><?php echo remove_junk($sale['issued_to']); ?></div>
+                    <div class="table-data"><?php echo remove_junk($sale['issued_by']); ?></div>
                     <div class="table-data"><?php echo (int)$sale['qty']; ?></div>
                     <div class="table-data"><?php echo date('m-d-Y', strtotime($sale['date'])); ?></div>
+                    <div class="table-data">
+                        <?php 
+            if ($sale['status'] == 'dispense') {
+                echo "<span style='color:red;font-weight:bold;'>Dispensed</span>";
+            } elseif ($sale['status'] == 'restock') {
+                echo "<span style='color:green;font-weight:bold;'>Restocked</span>";
+            } else {
+                echo htmlspecialchars($sale['status']);
+            }
+        ?>
+                    </div>
                 </div>
                 <?php endforeach; ?>
+
             </div>
+
         </div>
     </div>
 
@@ -206,7 +222,7 @@ $sales = dailySales($year, $month);
             downloadBtn.addEventListener('click', function() {
                 const visibleRows = document.querySelectorAll(
                     '.table-row:not([style*="display: none"])');
-                let csvContent = "No.,Product Name,Quantity,Total,Date\n";
+                let csvContent = "No.,Generic Name,Issued to,Issued by,Quantity,Date,Status\n";
 
                 visibleRows.forEach(row => {
                     const columns = row.querySelectorAll('.table-data');

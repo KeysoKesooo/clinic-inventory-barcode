@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 29, 2025 at 03:08 PM
+-- Generation Time: Oct 06, 2025 at 10:08 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -79,7 +79,7 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `product_photo`, `quantity`, `buy_price`, `sale_price`, `categorie_id`, `media_id`, `date`, `expiration_date`, `dosage`, `description`) VALUES
-(17, 'medikol', 'Discord-Logo-PNG-Images.png', '366', NULL, 0.00, 14, 0, '2025-08-17 15:20:18', NULL, '10mg', 'pang sakit ng ulo'),
+(17, 'medikol', 'Discord-Logo-PNG-Images.png', '363', NULL, 0.00, 14, 0, '2025-08-17 15:20:18', NULL, '10mg', 'pang sakit ng ulo'),
 (25, 'Lagundi', 'remix-rumble-1080x1080.jpg', '10', NULL, 0.00, 14, 0, '2025-08-23 09:56:48', NULL, '500mg', 'box'),
 (26, 'Newsep', '', '100', NULL, 0.00, 13, 0, '2025-08-23 10:36:47', NULL, '10mg', 'box'),
 (35, 'Paracetamol', NULL, '50', NULL, 0.00, 14, 0, '2025-09-15 12:35:32', NULL, '500mg', 'Reduces headache and fever'),
@@ -88,7 +88,7 @@ INSERT INTO `products` (`id`, `name`, `product_photo`, `quantity`, `buy_price`, 
 (38, 'Amoxicillin', '', '25', NULL, 0.00, 13, 0, '2025-09-15 12:35:32', '2025-09-11 00:00:00', '250mg', 'Antibiotic for bacterial infections'),
 (39, 'Vicks Vaporub', '', '60', NULL, 0.00, 12, 0, '2025-09-15 12:35:32', '2025-09-24 00:00:00', '10g', 'Relieves cough and congestion'),
 (41, 'Panadol', '', '43', NULL, 0.00, 14, 0, '2025-09-15 12:35:32', '2025-09-21 00:00:00', '500mg', 'Pain relief for headaches'),
-(43, 'Yakap', '', '50', NULL, 0.00, 14, 0, '2025-09-19 09:24:24', '2025-10-04 00:00:00', '500mg', 'Reduces headache and fever'),
+(43, 'Yakap', '', '49', NULL, 0.00, 14, 0, '2025-09-19 09:24:24', '2025-10-04 00:00:00', '500mg', 'Reduces headache and fever'),
 (44, 'test', '', '10', NULL, 0.00, 14, 0, '2025-09-29 14:16:05', '2025-10-03 00:00:00', '10mg', 'test1'),
 (48, 'test', '', '10', NULL, 0.00, 13, 0, '2025-09-29 15:07:47', '2025-10-11 00:00:00', '500mg', '');
 
@@ -103,21 +103,31 @@ CREATE TABLE `sales` (
   `product_id` int(11) UNSIGNED NOT NULL,
   `qty` int(11) NOT NULL,
   `price` decimal(25,2) NOT NULL,
-  `date` date NOT NULL
+  `date` date NOT NULL,
+  `issued_to` varchar(255) DEFAULT NULL,
+  `issued_by` int(11) NOT NULL,
+  `status` enum('dispense','restock') NOT NULL DEFAULT 'dispense'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `sales`
 --
 
-INSERT INTO `sales` (`id`, `product_id`, `qty`, `price`, `date`) VALUES
-(28, 17, 1, 0.00, '2025-08-23'),
-(29, 17, 1, 0.00, '2025-08-23'),
-(32, 17, 10, 0.00, '2025-08-24'),
-(33, 17, 1, 0.00, '2025-08-24'),
-(34, 17, 1, 0.00, '2025-08-24'),
-(36, 41, 1, 0.00, '2025-09-15'),
-(37, 41, 1, 0.00, '2025-09-15');
+INSERT INTO `sales` (`id`, `product_id`, `qty`, `price`, `date`, `issued_to`, `issued_by`, `status`) VALUES
+(28, 17, 1, 0.00, '2025-08-23', '', 0, 'dispense'),
+(29, 17, 1, 0.00, '2025-08-23', '', 0, 'dispense'),
+(32, 17, 10, 0.00, '2025-08-24', '', 0, 'dispense'),
+(33, 17, 1, 0.00, '2025-08-24', '', 0, 'dispense'),
+(34, 17, 1, 0.00, '2025-08-24', '', 0, 'dispense'),
+(36, 41, 1, 0.00, '2025-09-15', '', 0, 'dispense'),
+(37, 41, 1, 0.00, '2025-09-15', '', 0, 'dispense'),
+(38, 17, 1, 0.00, '2025-09-29', '', 0, 'dispense'),
+(39, 17, 1, 0.00, '2025-09-29', '', 0, 'dispense'),
+(40, 17, 1, 0.00, '2025-10-03', 'Neil', 9, 'dispense'),
+(41, 43, 1, 0.00, '2025-10-03', 'lalove', 9, 'dispense'),
+(42, 17, 1, 0.00, '2025-10-07', 'Neil', 9, 'dispense'),
+(43, 17, 1, 0.00, '2025-10-07', NULL, 9, 'restock'),
+(44, 17, 1, 0.00, '2025-10-07', 'Neil', 9, 'dispense');
 
 -- --------------------------------------------------------
 
@@ -142,7 +152,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `username`, `password`, `user_level`, `image`, `status`, `last_login`) VALUES
 (2, 'dyan Walker', 'special', 'ba36b97a41e7faf742ab09bf88405ac04f99599a', 2, 'no_image.png', 1, '2021-04-04 19:53:26'),
-(9, 'Grace Ortilliano', 'AdminGrace', '$2y$10$EwCk9DUA3q6nK3IasZc7hOu3xL9S8odIYqIhJ6sEt2BlL8zVChREK', 1, 'no_image.png', 1, '2025-09-29 15:01:51'),
+(9, 'Grace Ortilliano', 'AdminGrace', '$2y$10$EwCk9DUA3q6nK3IasZc7hOu3xL9S8odIYqIhJ6sEt2BlL8zVChREK', 1, 'no_image.png', 1, '2025-10-06 21:34:21'),
 (11, 'Gracia Jeff', 'GraceAdmin', '$2y$10$WT3qcklkBsv8kRNyGcVSvu49kIYr/qvw6zM6eacHBdpb9aPXgNAUa', 1, 'no_image.png', 1, '2025-09-15 10:33:40'),
 (12, 'Ruel  Weng', 'Nurse', '$2y$10$m1JpYXnYngz6xuV2EucF7unAAah9ZgVNAShyW3nIfcVXuyZ10tshi', 2, 'no_image.png', 1, '2025-08-12 09:47:08'),
 (13, 'try patingin', 'try', '$2y$10$ABfsXYHbRbUHRA/5zM/iw.C3LCqgMr7j65rNlwPfnRE3FW7NtnTFO', 1, 'no_image.png', 1, NULL),
@@ -256,13 +266,13 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `users`

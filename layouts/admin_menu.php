@@ -1,6 +1,7 @@
 <div class="sidebar-logo" style="text-align:center; padding:15px;">
     <a href="admin.php">
-        <img src="logo.png" alt="Logo" style="max-width:200px; height:auto;">
+        <img src="logo.jpg" alt="Logo" style="max-width:200px; height:auto; border-radius:80%; object-fit:cover;">
+
     </a>
 </div>
 <ul>

@@ -19,9 +19,6 @@ $dispensing_trends = find_medicine_dispensing_trends();
 
 <?php include_once('layouts/header.php'); ?>
 
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -139,15 +136,15 @@ $dispensing_trends = find_medicine_dispensing_trends();
 
 
         /* -------------------------
-           Medicine Dispensing Trends
+           Medicine Dispensing Trends (Area Chart)
         ------------------------- */
         const trendsData = <?php
-        $data = [];
-        foreach ($dispensing_trends as $row) {
-            $data[$row['medicine_name']][$row['month']] = (int)$row['total_dispensed'];
-        }
-        echo json_encode($data);
-    ?>;
+    $data = [];
+    foreach ($dispensing_trends as $row) {
+        $data[$row['medicine_name']][$row['month']] = (int)$row['total_dispensed'];
+    }
+    echo json_encode($data);
+?>;
 
         const months = [...new Set(Object.values(trendsData).flatMap(obj => Object.keys(obj)))];
         const colors = [
@@ -155,16 +152,19 @@ $dispensing_trends = find_medicine_dispensing_trends();
             '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
             '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000'
         ];
-        let colorIndex = 0;
 
-        const datasets = Object.entries(trendsData).map(([medicine, values]) => ({
-            label: medicine,
-            data: months.map(m => values[m] ?? 0),
-            borderColor: colors[colorIndex++ % colors.length],
-            backgroundColor: 'transparent',
-            borderWidth: 2,
-            tension: 0.1
-        }));
+        const datasets = Object.entries(trendsData).map(([medicine, values], i) => {
+            const color = colors[i % colors.length];
+            return {
+                label: medicine,
+                data: months.map(m => values[m] ?? 0),
+                fill: true, // area fill
+                backgroundColor: `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.3)`,
+                borderColor: color,
+                borderWidth: 2,
+                tension: 0.3
+            };
+        });
 
         const trendsCtx = document.getElementById('medicineTrendsChart').getContext('2d');
         new Chart(trendsCtx, {
@@ -203,6 +203,7 @@ $dispensing_trends = find_medicine_dispensing_trends();
                 }
             }
         });
+
     });
     </script>
 

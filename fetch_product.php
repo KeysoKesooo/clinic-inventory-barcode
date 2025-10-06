@@ -11,35 +11,36 @@ if (isset($_POST['product_id'])) {
         exit;
     }
 
-    // Get product photo from products table
     $photo = !empty($product['product_photo']) ? $product['product_photo'] : "no_image.png";
-
-    // Decide which PHP file to use
     $targetFile = ($mode === 'restock') ? "record_restock.php" : "record_sale.php";
 ?>
 <div class="product-card shadow-lg p-3">
-    <!-- Product photo -->
     <img src="uploads/products/<?php echo $photo; ?>" alt="Product Image" class="mb-3 border">
 
-    <!-- Product name -->
     <h3 class="fw-bold text-primary mb-2"><?php echo remove_junk($product['name']); ?></h3>
     <p class="fs-5 text-dark"><strong>Stock:</strong>
         <span class="badge bg-info text-dark fs-6"><?php echo (int)$product['quantity']; ?></span>
     </p>
 
-    <!-- Sale/Restock form -->
     <form id="product-form" class="mt-3">
         <input type="hidden" name="s_id" value="<?php echo (int)$product['id']; ?>">
+        <input type="hidden" name="status" value="<?php echo ($mode === 'restock') ? 'restock' : 'dispense'; ?>">
 
         <div class="mb-3 text-start">
             <label class="fw-semibold">Quantity</label>
             <input type="number" class="form-control form-control-lg" name="quantity" value="1" min="1" required>
         </div>
 
+        <?php if ($mode === 'sale') { ?>
         <div class="mb-3 text-start">
-            <label class="fw-semibold">Date</label>
-            <input type="date" class="form-control form-control-lg" name="date" value="<?php echo date('Y-m-d'); ?>">
+            <label class="fw-semibold">Issued To</label>
+            <input type="text" class="form-control form-control-lg" name="issued_to" placeholder="Enter recipient name"
+                required>
         </div>
+        <input type="hidden" name="issued_by" value="<?php echo (int)$_SESSION['user_id']; ?>">
+        <?php } else { ?>
+        <input type="hidden" name="restocked_by" value="<?php echo (int)$_SESSION['user_id']; ?>">
+        <?php } ?>
 
         <div class="d-flex justify-content-between mt-4">
             <button type="submit" class="btn btn-success btn-lg px-4 fw-bold">✔ Confirm</button>

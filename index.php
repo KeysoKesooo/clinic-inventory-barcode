@@ -26,7 +26,7 @@
         <form class="form" method="post" action="auth.php">
             <!-- Logo at the top -->
             <div class="logo">
-                <img src="logo1.png" alt="Logo">
+                <img src="logo.jpg" alt="Logo">
             </div>
 
             <div class="title">

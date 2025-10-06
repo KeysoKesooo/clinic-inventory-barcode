@@ -3,30 +3,33 @@
   require_once('includes/load.php');
   page_require_level(3);
 
-  if (isset($_POST['add_sale'])) {
-    $req_fields = ['s_id', 'quantity', 'date'];
-    validate_fields($req_fields);
+if (isset($_POST['add_sale'])) {
+  $req_fields = ['s_id', 'quantity', 'date', 'issued_to', 'issued_by'];
+  validate_fields($req_fields);
 
-    if (empty($errors)) {
-      $p_id    = (int)$db->escape($_POST['s_id']);
-      $s_qty   = (int)$db->escape($_POST['quantity']);
-      $s_date  = $db->escape($_POST['date']);
+  if (empty($errors)) {
+    $p_id       = (int)$db->escape($_POST['s_id']);
+    $s_qty      = (int)$db->escape($_POST['quantity']);
+    $s_date     = $db->escape($_POST['date']);
+    $issued_to  = $db->escape($_POST['issued_to']);
+    $issued_by  = (int)$db->escape($_POST['issued_by']);
 
-      $sql = "INSERT INTO sales (product_id, qty, date) 
-              VALUES ('{$p_id}', '{$s_qty}', '{$s_date}')";
+    $sql = "INSERT INTO sales (product_id, qty, date, issued_to, issued_by) 
+            VALUES ('{$p_id}', '{$s_qty}', '{$s_date}', '{$issued_to}', '{$issued_by}')";
 
-      if ($db->query($sql)) {
-        update_product_qty($s_qty, $p_id);
-        $session->msg('s', "Record added.");
-      } else {
-        $session->msg('d', 'Failed to add record.');
-      }
+    if ($db->query($sql)) {
+      update_product_qty($s_qty, $p_id);
+      $session->msg('s', "Record added.");
     } else {
-      $session->msg("d", $errors);
+      $session->msg('d', 'Failed to add record.');
     }
-
-    redirect('add_sale.php', false);
+  } else {
+    $session->msg("d", $errors);
   }
+
+  redirect('add_sale.php', false);
+}
+
 
   $all_products = join_product_table();
   $all_categories = find_all('categories');
@@ -61,9 +64,11 @@
         <div class="table">
             <div class="table-header">
                 <div class="header__item">No.</div>
-                <div class="header__item">Product Name</div>
+                <div class="header__item">Generic Name</div>
+                <div class="header__item">Issued To</div>
+                <div class="header__item">Issued By</div>
                 <div class="header__item">Category</div>
-                <div class="header__item">Quantity</div>
+                <div class="header__item">Quantity Issued</div>
                 <div class="header__item">Date</div>
                 <div class="header__item">Actions</div>
             </div>
@@ -77,6 +82,16 @@
                         <?php echo remove_junk($product['name']); ?>
                         <input type="hidden" name="s_id" value="<?php echo (int)$product['id']; ?>">
                     </div>
+                    <div class="table-data">
+                        <input type="text" class="form-control" style="width:100%;" name="issued_to"
+                            placeholder="Issued To" required>
+                    </div>
+                    <div class="table-data">
+                        <input type="hidden" name="issued_by" value="<?= (int)$user['id']; ?>">
+                        <?= remove_junk($user['name']); ?>
+                        <!-- display the current user -->
+                    </div>
+
                     <div class="table-data">
                         <?php echo remove_junk($product['categorie']); ?>
                     </div>

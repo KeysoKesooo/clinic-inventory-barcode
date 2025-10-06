@@ -343,13 +343,13 @@ if (isset($_POST['import_products'])) {
             <div class="table-header">
                 <div class="header__item">No.</div>
                 <div class="header__item">Photo</div>
-                <div class="header__item">Medicine Title</div>
+                <div class="header__item">Generic Name</div>
                 <div class="header__item">Dosage</div>
                 <div class="header__item">Description</div>
                 <div class="header__item">Categories</div>
                 <div class="header__item">In-Stock</div>
                 <div class="header__item">Expiration Date</div>
-                <div class="header__item">Product Added</div>
+                <div class="header__item">Date Added</div>
                 <div class="header__item">Actions</div>
             </div>
 
@@ -452,12 +452,12 @@ if (isset($_POST['import_products'])) {
         <div class="container">
             <form method="post" action="product.php" class="form_area" enctype="multipart/form-data">
                 <span class="close-modal" data-dismiss="modal">&times;</span>
-                <div class="title">Add New Medicine</div>
+                <div class="title">Add New</div>
 
                 <div class="form_group">
-                    <label for="product-title">Medicine Title</label>
+                    <label for="product-title">Generic Name</label>
                     <input class="form_style" type="text" name="product-title" id="product-title"
-                        placeholder="Medicine Title" required>
+                        placeholder="Generic Name" required>
                 </div>
 
                 <div class="form_group">
@@ -471,15 +471,16 @@ if (isset($_POST['import_products'])) {
                 </div>
 
                 <div class="form_group">
-                    <label for="product-photo">Medicine Photo</label>
+                    <label for="product-photo">Generic Photo</label>
                     <input class="form_style" type="file" name="product-photo" id="product-photo" accept="image/*">
                 </div>
 
                 <div class="form_group">
                     <label for="product-quantity">Quantity</label>
                     <input class="form_style" type="number" name="product-quantity" id="product-quantity"
-                        placeholder="Product Quantity" required>
+                        placeholder="Product Quantity" min="1" required>
                 </div>
+
 
                 <div class="form_group">
                     <label for="product-dosage">Dosage</label>
@@ -514,11 +515,11 @@ if (isset($_POST['import_products'])) {
             <!-- IMPORTANT: enctype for file uploads -->
             <form method="post" action="product.php" class="form_area" enctype="multipart/form-data">
                 <span class="close-modal" data-dismiss="modal">&times;</span>
-                <div class="title">Edit Product</div>
+                <div class="title">Edit</div>
                 <input type="hidden" name="id" id="edit-product-id">
 
                 <div class="form_group">
-                    <label for="edit-product-title">Medicine Title</label>
+                    <label for="edit-product-title">Generic Name</label>
                     <input class="form_style" type="text" name="product-title" id="edit-product-title" required>
                 </div>
 
@@ -533,7 +534,7 @@ if (isset($_POST['import_products'])) {
                 </div>
 
                 <div class="form_group">
-                    <label for="edit-product-photo">Medicine Photo</label>
+                    <label for="edit-product-photo">Generic Photo</label>
                     <input class="form_style" type="file" name="product-photo" id="edit-product-photo" accept="image/*">
                     <!-- Optional: show current filename -->
                     <small id="current-photo-name" class="text-muted"></small>
@@ -613,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
             '#table-content-products .table-row:not([style*="display: none"])');
 
         // Prepare CSV content
-        let csvContent = "No.,Product Title,Category,In-Stock,Dosage,Description,Date Added\n";
+        let csvContent = "No.,Generic Name,Category,In-Stock,Dosage,Description,Date Added\n";
 
         visibleRows.forEach(row => {
             const columns = row.querySelectorAll('.table-data');

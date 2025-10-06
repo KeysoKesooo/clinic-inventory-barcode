@@ -82,52 +82,54 @@
 
             <!-- Sales management table -->
             <div class="table-content" id="table-content-sales">
-                <?php $count = 1; ?>
                 <?php foreach ($sales as $month => $entries): ?>
                 <details class="monthly-group">
                     <summary>
-                        <strong><?php echo $month; ?></strong> (<?php echo count($entries); ?> sales)
+                        <strong><?php echo $month; ?></strong> (<?php echo count($entries); ?>)
                     </summary>
-                    <div class="table month-sales-table">
-                        <?php 
-                // Array to hold total quantities per dosage
-                $dosage_totals = [];
 
-                foreach ($entries as $entry): 
-                    // Group by dosage
-                    $dosage = $entry['dosage'] ?: 'No dosage';
-                    if (!isset($dosage_totals[$dosage])) {
-                        $dosage_totals[$dosage] = 0;
-                    }
-                    $dosage_totals[$dosage] += $entry['qty'];
-            ?>
+                    <a class="export_button month-download-btn" style="display:inline-flex;align-items:center;gap:5px;background:#3498db;color:#fff;
+       padding:4px 8px;font-size:12px;border:none;border-radius:4px;cursor:pointer;
+       margin-left:10px;" data-month="<?php echo $month; ?>">
+                        <i class="fa-solid fa-download"></i>
+                        <span class="export_button__text">Export <?php echo $month; ?></span>
+                    </a>
+
+                    <div class="table month-sales-table" data-month="<?php echo $month; ?>">
+                        <?php 
+        $count = 1; 
+        $total_dispense = 0; // track total dispense for this month
+        ?>
+                        <?php foreach ($entries as $entry): ?>
                         <div class="table-row" data-category="<?php echo $entry['category_name']; ?>">
                             <div class="table-data"><?php echo $count++; ?></div>
                             <div class="table-data"><?php echo remove_junk($entry['name']); ?></div>
                             <div class="table-data"><?php echo $entry['category_name'] ?: 'Uncategorized'; ?></div>
-                            <div class="table-data"><?php echo $entry['dosage'] ?: 'N/A'; ?></div>
                             <div class="table-data"><?php echo $entry['qty']; ?></div>
+                            <div class="table-data"><?php echo $entry['stocks']; ?></div>
+                            <div class="table-data"><?php echo $entry['issued_by']; ?></div>
+                            <div class="table-data"><?php echo $entry['issued_to']; ?></div>
                             <div class="table-data"><?php echo date('m-d-Y', strtotime($entry['date'])); ?></div>
+                            <div class="table-data"><?php echo $entry['status']; ?></div>
                         </div>
+                        <?php 
+            $total_dispense += (int)$entry['qty']; 
+        ?>
                         <?php endforeach; ?>
 
-                        <!-- Show totals per dosage -->
-                        <?php foreach ($dosage_totals as $dosage => $total_qty): ?>
-                        <div class="table-row total-row">
-                            <div class="table-data" colspan="6">
-                                <strong>Total <?php echo $dosage; ?>:</strong>
-                            </div>
-                            <div class="table-data"></div>
-                            <div class="table-data"></div>
-                            <div class="table-data"><strong><?php echo $total_qty; ?></strong></div>
-                            <div class="table-data"></div>
-                            <div class="table-data"></div>
+                        <!-- Display total dispense row -->
+                        <div class="table-row" style="font-weight:bold;background:#f1f1f1;">
+                            <div class="table-data" colspan="3">Total Dispense</div>
+                            <div class="table-data"><?php echo $total_dispense; ?></div>
+                            <div class="table-data" colspan="4"></div>
                         </div>
-                        <?php endforeach; ?>
                     </div>
                 </details>
                 <?php endforeach; ?>
+
+
             </div>
+
 
 
         </div>
@@ -215,6 +217,11 @@
         // ======================
 
         // Export to CSV
+        // ======================
+        // EXPORT FUNCTIONALITY
+        // ======================
+
+        // Global export (all rows)
         const downloadBtn = document.getElementById('download-btn');
         if (downloadBtn) {
             downloadBtn.addEventListener('click', downloadFilteredData);
@@ -222,7 +229,7 @@
 
         function downloadFilteredData() {
             const visibleRows = document.querySelectorAll('.table-row:not([style*="display: none"])');
-            let csvContent = "No.,Product Name,Category,Quantity,Date\n";
+            let csvContent = "No.,Generic Name,Quantity,Stocks,Issued to,Issued by,Date,Status\n";
 
             visibleRows.forEach(row => {
                 const columns = row.querySelectorAll('.table-data');
@@ -231,59 +238,69 @@
                     columns[1].textContent.trim(),
                     columns[2].textContent.trim(),
                     columns[3].textContent.trim(),
-                    columns[4].textContent.trim()
-                ];
+                    columns[4].textContent.trim(),
+                    columns[5].textContent.trim(),
+                    columns[6].textContent.trim(),
+                    columns[7].textContent.trim(),
+                    columns[8].textContent.trim()
 
+                ];
                 csvContent += rowData.map(data => `"${data.replace(/"/g, '""')}"`).join(',') + '\n';
             });
 
-            const blob = new Blob([csvContent], {
+            downloadCSV(csvContent, 'monthly_records_data.csv');
+        }
+
+        // Per-month export
+        document.querySelectorAll('.month-download-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const month = this.getAttribute('data-month').trim();
+                const table = this.closest('.monthly-group').querySelector(
+                    '.month-sales-table');
+                const rows = table.querySelectorAll('.table-row');
+
+                let csvContent =
+                    "No.,Generic Name,Category,Quantity,Stocks,Issued By,Issued To,Date\n";
+
+                rows.forEach(row => {
+                    if (row.style.fontWeight === "bold" || row.textContent.includes(
+                            "Total Dispense")) return;
+
+                    const columns = row.querySelectorAll('.table-data');
+                    const rowData = [
+                        columns[0]?.textContent.trim(),
+                        columns[1]?.textContent.trim(),
+                        columns[2]?.textContent.trim(),
+                        columns[3]?.textContent.trim(),
+                        columns[4]?.textContent.trim(),
+                        columns[5]?.textContent.trim(),
+                        columns[6]?.textContent.trim(),
+                        columns[7]?.textContent.trim()
+                    ];
+                    csvContent += rowData.map(data =>
+                        `"${(data || '').replace(/"/g, '""')}"`).join(',') + '\n';
+                });
+
+                downloadCSV(csvContent, `records_${month}.csv`);
+            });
+        });
+
+
+        // Helper function for downloading
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], {
                 type: 'text/csv;charset=utf-8;'
             });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.setAttribute('href', url);
-            link.setAttribute('download', 'monthly_sales_data.csv');
-            link.style.visibility = 'hidden';
+            link.setAttribute('download', filename);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // ======================
-        // SORTING FUNCTIONALITY
-        // ======================
-
-        const headers = document.querySelectorAll('.header__item');
-        const tableContent = document.getElementById('table-content-sales');
-
-        if (headers && tableContent) {
-            headers.forEach((header, index) => {
-                header.addEventListener('click', () => {
-                    const rows = Array.from(tableContent.querySelectorAll('.table-row'));
-                    const isAscending = header.classList.toggle('asc');
-
-                    rows.sort((a, b) => {
-                        const cellA = a.children[index].textContent.trim()
-                            .toLowerCase();
-                        const cellB = b.children[index].textContent.trim()
-                            .toLowerCase();
-
-                        const numberA = parseFloat(cellA.replace(/[^0-9.-]+/g, ""));
-                        const numberB = parseFloat(cellB.replace(/[^0-9.-]+/g, ""));
-
-                        if (!isNaN(numberA) && !isNaN(numberB)) {
-                            return isAscending ? numberA - numberB : numberB - numberA;
-                        } else {
-                            return isAscending ? cellA.localeCompare(cellB) : cellB
-                                .localeCompare(cellA);
-                        }
-                    });
-
-                    rows.forEach(row => tableContent.appendChild(row));
-                });
-            });
-        }
 
         // ======================
         // SEARCH FUNCTIONALITY

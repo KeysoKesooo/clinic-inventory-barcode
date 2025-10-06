@@ -3,11 +3,12 @@ $page_title = 'All Records';
 require_once('includes/load.php');
 page_require_level(3);
 // Default query
-$query = "SELECT s.id, p.name, c.name AS category_name, s.qty, s.date, s.product_id
+$query = "SELECT s.id, p.name, c.name AS category_name, s.qty, s.date, s.product_id, s.status, s.issued_to, s.issued_by
           FROM sales s
           LEFT JOIN products p ON s.product_id = p.id
           LEFT JOIN categories c ON p.categorie_id = c.id
           WHERE 1=1";
+
 
 // Apply filters if set
 if (isset($_GET['filter'])) {
@@ -30,15 +31,17 @@ $sales = find_by_sql($query);
 
 // Handle the edit sale form submission
 if(isset($_POST['edit_sale'])){
-    $sale_id = (int)$db->escape($_POST['sale_id']);
-    $quantity = (int)$db->escape($_POST['quantity']);
-
-    $date = $db->escape($_POST['date']);
+    $sale_id    = (int)$db->escape($_POST['sale_id']);
+    $quantity   = (int)$db->escape($_POST['quantity']);
+    $date       = $db->escape($_POST['date']);
+    $issued_to  = $db->escape($_POST['issued_to']);
+    $issued_by  = (int)$db->escape($_POST['issued_by']);
+    
     $s_date = date("Y-m-d", strtotime($date));
 
-    $req_fields = array('quantity','date');
+    $req_fields = array('quantity','date','issued_to');
     validate_fields($req_fields);
-    
+
     if(empty($errors)){
         $sale = find_by_id('sales', $sale_id);
         if(!$sale || !isset($sale['product_id'])){
@@ -52,9 +55,12 @@ if(isset($_POST['edit_sale'])){
             redirect('sales.php');
         }
 
-        $sql = "UPDATE sales SET";
-        $sql .= " qty={$quantity}, price='{$price}', date='{$s_date}'";
-        $sql .= " WHERE id ='{$sale_id}'";
+        $sql = "UPDATE sales SET ";
+        $sql .= "qty={$quantity}, ";
+        $sql .= "date='{$s_date}', ";
+        $sql .= "issued_to='{$issued_to}', ";
+        $sql .= "issued_by='{$issued_by}' ";
+        $sql .= "WHERE id ='{$sale_id}'";
 
         $result = $db->query($sql);
         if($result && $db->affected_rows() === 1){
@@ -70,6 +76,7 @@ if(isset($_POST['edit_sale'])){
         redirect('sales.php', false);
     }
 }
+
 
 // 🔹 Only load all sales if no filter was applied
 if (!isset($_GET['filter'])) {
@@ -190,10 +197,12 @@ if (!isset($_GET['filter'])) {
             <div class="table">
                 <div class="table-header">
                     <div class="header__item">No.</div>
-                    <div class="header__item">Product Name</div>
-                    <div class="header__item">Category</div>
-                    <div class="header__item">Quantity</div>
+                    <div class="header__item">Generic Name</div>
+                    <div class="header__item">Issued to</div>
+                    <div class="header__item">Issued by</div>
+                    <div class="header__item">Quantity Issued</div>
                     <div class="header__item">Date</div>
+                    <div class="header__item">Status</div>
                     <div class="header__item">Actions</div>
                 </div>
 
@@ -203,17 +212,31 @@ if (!isset($_GET['filter'])) {
                         data-category="<?= isset($sale['category_name']) ? htmlspecialchars($sale['category_name']) : 'Uncategorized' ?>">
                         <div class="table-data"><?= count_id() ?></div>
                         <div class="table-data"><?= remove_junk($sale['name']) ?></div>
-                        <div class="table-data">
-                            <?= isset($sale['category_name']) ? remove_junk($sale['category_name']) : 'Uncategorized' ?>
-                        </div>
+                        <div class="table-data"><?= remove_junk($sale['issued_to']) ?></div>
+                        <div class="table-data"><?= remove_junk($sale['issued_by']) ?></div>
                         <div class="table-data"><?= (int)$sale['qty'] ?></div>
                         <div class="table-data"><?php echo date('m-d-Y', strtotime($sale['date'])); ?></div>
                         <div class="table-data">
+                            <?php 
+            if ($sale['status'] == 'dispense') {
+                echo "<span style='color:red;font-weight:bold;'>Dispensed</span>";
+            } elseif ($sale['status'] == 'restock') {
+                echo "<span style='color:green;font-weight:bold;'>Restocked</span>";
+            } else {
+                echo htmlspecialchars($sale['status']);
+            }
+        ?>
+                        </div>
+                        <div class="table-data">
                             <button type="button" class="btn btn-warning edit-btn" data-id="<?= (int)$sale['id'] ?>"
-                                data-name="<?= remove_junk($sale['name']) ?>" data-qty="<?= (int)$sale['qty'] ?>"
+                                data-name="<?= remove_junk($sale['name']) ?>"
+                                data-issued-to="<?= remove_junk($sale['issued_to']) ?>"
+                                data-issued-by="<?= (int)$sale['issued_by'] ?>" data-qty="<?= (int)$sale['qty'] ?>"
                                 data-date="<?= $sale['date'] ?>">
                                 <i class="glyphicon glyphicon-pencil"></i>
                             </button>
+
+
                             <a href="delete_sale.php?id=<?= (int)$sale['id'] ?>" class="btn btn-danger"
                                 onclick="return confirmDelete(event)">
                                 <i class="glyphicon glyphicon-trash"></i>
@@ -231,32 +254,60 @@ if (!isset($_GET['filter'])) {
             <div class="modal-dialog" role="document">
                 <div class="container">
                     <form method="post" action="sales.php" class="form_area">
+                        <!-- Close Button -->
                         <span class="close-modal" data-dismiss="modal">&times;</span>
-                        <div class="title">Edit Sale</div>
+
+                        <!-- Title -->
+                        <div class="title">Edit Record</div>
+
+                        <!-- Hidden sale_id -->
                         <input type="hidden" name="sale_id" id="edit-sale-id">
 
+                        <!-- Generic Name (readonly display) -->
+                        <!-- Generic Name -->
                         <div class="form_group">
-                            <label>Product Name</label>
-                            <div class="form_style" id="edit-sale-name-display"
-                                style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></div>
+                            <label>Generic Name</label>
+                            <div class="form_style readonly" id="edit-sale-name-display"></div>
                             <input type="hidden" id="edit-sale-name">
                         </div>
 
+                        <!-- Issued To -->
+                        <div class="form_group">
+                            <label for="edit-sale-issued-to">Issued To</label>
+                            <input class="form_style" type="text" name="issued_to" id="edit-sale-issued-to" required>
+                        </div>
+
+                        <div class="form_group">
+                            <label>Issued By</label>
+                            <div class="form_style readonly">
+                                <?= remove_junk($user['name']); ?>
+                            </div>
+                            <input type="hidden" name="issued_by" id="edit-sale-issued-by"
+                                value="<?= (int)$user['id']; ?>">
+                        </div>
+
+                        <!-- Quantity -->
                         <div class="form_group">
                             <label for="edit-sale-qty">Quantity</label>
                             <input class="form_style" type="number" name="quantity" id="edit-sale-qty" required>
                         </div>
 
+
+                        <!-- Date -->
                         <div class="form_group">
                             <label for="edit-sale-date">Date</label>
                             <input class="form_style datepicker" type="date" name="date" id="edit-sale-date" required>
                         </div>
 
-                        <button type="submit" name="edit_sale" class="form_btn">Update Sale</button>
+                        <!-- Submit -->
+                        <button type="submit" name="edit_sale" class="form_btn">Update Record</button>
                     </form>
                 </div>
             </div>
         </div>
+
+
+
 
         <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -364,29 +415,14 @@ if (!isset($_GET['filter'])) {
                     document.getElementById('edit-sale-name-display').textContent = btn.dataset
                         .name;
                     document.getElementById('edit-sale-name').value = btn.dataset.name;
+                    document.getElementById('edit-sale-issued-to').value = btn.dataset.issuedTo;
+                    document.getElementById('edit-sale-issued-by').value = btn.dataset.issuedBy;
                     document.getElementById('edit-sale-qty').value = btn.dataset.qty;
-                    document.getElementById('edit-sale-price').value = btn.dataset.price;
-                    document.getElementById('edit-sale-total').value = btn.dataset.total;
                     document.getElementById('edit-sale-date').value = btn.dataset.date;
 
                     $('#editSaleModal').modal('show');
                 });
             });
-
-            // Calculate total when quantity or price changes
-            const qtyInput = document.getElementById('edit-sale-qty');
-            const priceInput = document.getElementById('edit-sale-price');
-
-            if (qtyInput && priceInput) {
-                qtyInput.addEventListener('input', calculateTotal);
-                priceInput.addEventListener('input', calculateTotal);
-            }
-
-            function calculateTotal() {
-                const qty = parseFloat(document.getElementById('edit-sale-qty').value) || 0;
-                const price = parseFloat(document.getElementById('edit-sale-price').value) || 0;
-                document.getElementById('edit-sale-total').value = (qty * price).toFixed(2);
-            }
 
             // ======================
             // EXPORT FUNCTIONALITY
@@ -400,7 +436,7 @@ if (!isset($_GET['filter'])) {
 
             function downloadFilteredData() {
                 const visibleRows = document.querySelectorAll('.table-row:not([style*="display: none"])');
-                let csvContent = "No.,Product Name,Category,Quantity,Date\n";
+                let csvContent = "No.,Generic Name, Issued to, Issued by,Quantity,Date,Status\n";
 
                 visibleRows.forEach(row => {
                     const columns = row.querySelectorAll('.table-data');
@@ -409,7 +445,10 @@ if (!isset($_GET['filter'])) {
                         columns[1].textContent.trim(),
                         columns[2].textContent.trim(),
                         columns[3].textContent.trim(),
-                        columns[4].textContent.trim()
+                        columns[4].textContent.trim(),
+                        columns[5].textContent.trim(),
+                        columns[6].textContent.trim()
+
                     ];
 
                     csvContent += rowData.map(data => `"${data.replace(/"/g, '""')}"`).join(',') + '\n';

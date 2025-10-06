@@ -1058,7 +1058,7 @@ h1,h2,h3,h4,h5,h6 {
 
 
 .table {
-  margin: 24px 0 0 0;
+  margin: 10px 0 0 0;
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
@@ -1095,7 +1095,7 @@ h1,h2,h3,h4,h5,h6 {
   transition: color 0.2s, background 0.2s;
   min-width: 0;
   position: relative;
-  font-size: 1rem;
+  font-size: 2rem;
   border-right: 1px solid #eaeaea;
 }
 .header__item:last-child {

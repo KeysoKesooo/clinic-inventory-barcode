@@ -342,13 +342,18 @@ function find_medicine_dispensing_trends(){
  /*--------------------------------------------------------------*/
 function find_all_sale(){
     global $db;
-    $sql  = "SELECT s.id,s.qty,s.price,s.date,p.name,c.name AS category_name";
-    $sql .= " FROM sales s";
-    $sql .= " LEFT JOIN products p ON s.product_id = p.id";
-    $sql .= " LEFT JOIN categories c ON p.categorie_id = c.id";
-    $sql .= " ORDER BY s.date DESC, s.id DESC";
+    $sql  = "SELECT s.id, s.product_id, s.qty, s.price, s.date, s.issued_to, s.status, ";
+    $sql .= "u.name AS issued_by, ";
+    $sql .= "p.name, c.name AS category_name ";
+    $sql .= "FROM sales s ";
+    $sql .= "LEFT JOIN products p ON s.product_id = p.id ";
+    $sql .= "LEFT JOIN categories c ON p.categorie_id = c.id ";
+    $sql .= "LEFT JOIN users u ON s.issued_by = u.id ";
+    $sql .= "ORDER BY s.date DESC, s.id DESC";
     return find_by_sql($sql);
 }
+
+
  /*--------------------------------------------------------------*/
  /* Function for Display Recent sale
  /*--------------------------------------------------------------*/
@@ -382,28 +387,30 @@ function find_sale_by_dates($start_date,$end_date){
 /*--------------------------------------------------------------*/
 /* Function for Generate Daily sales report
 /*--------------------------------------------------------------*/
-function dailySales($year, $month) {
+function dailySales() {
     global $db;
-    
+
     $sql  = "SELECT 
                 s.id, 
                 s.qty, 
-                DATE_FORMAT(s.date, '%Y-%m-%e %H:%i:%s') AS date, 
-                p.name, 
+                s.price,
+                s.status,
+                DATE_FORMAT(s.date, '%Y-%m-%d %H:%i:%s') AS date, 
+                s.issued_to, 
+                u.name AS issued_by,   -- user who issued
+                p.name AS product_name, 
                 p.dosage, 
                 p.description, 
-                c.name AS category_name, 
-                SUM(p.sale_price * s.qty) AS total_saleing_price 
-            FROM sales s 
-            LEFT JOIN products p ON s.product_id = p.id 
-            LEFT JOIN categories c ON p.categorie_id = c.id 
-            WHERE s.date >= NOW() - INTERVAL 1 DAY 
-            GROUP BY DATE(s.date), s.product_id
-            ORDER BY s.id DESC";
+                c.name AS category_name
+            FROM sales s
+            LEFT JOIN products p ON s.product_id = p.id
+            LEFT JOIN categories c ON p.categorie_id = c.id
+            LEFT JOIN users u ON s.issued_by = u.id
+            WHERE DATE(s.date) = CURDATE()   -- ✅ Only today's records
+            ORDER BY s.date DESC";
 
     return find_by_sql($sql);
 }
-
 
 
 
@@ -415,15 +422,18 @@ function monthlySales($year) {
     global $db;
     $sql  = "SELECT 
                 p.name, 
-                p.dosage, 
                 p.description, 
                 c.name AS category_name, 
                 s.qty, 
-                (s.price * s.qty) AS total_saleing_price, 
-                s.date 
+                s.status,
+                p.quantity AS stocks, 
+                s.date,
+                u1.name AS issued_by,   -- from users
+                s.issued_to             -- directly from sales table
             FROM sales s 
             LEFT JOIN products p ON s.product_id = p.id 
             LEFT JOIN categories c ON p.categorie_id = c.id 
+            LEFT JOIN users u1 ON s.issued_by = u1.id
             WHERE YEAR(s.date) = '{$year}' 
             ORDER BY s.date DESC";
     
@@ -440,6 +450,7 @@ function monthlySales($year) {
 
     return $grouped;
 }
+
 
 
 
