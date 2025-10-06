@@ -85,7 +85,7 @@
                 <?php foreach ($sales as $month => $entries): ?>
                 <details class="monthly-group">
                     <summary>
-                        <strong><?php echo $month; ?></strong> (<?php echo count($entries); ?>)
+                        <strong><?php echo $month; ?></strong> (<?php echo count($entries); ?> sales)
                     </summary>
 
                     <a class="export_button month-download-btn" style="display:inline-flex;align-items:center;gap:5px;background:#3498db;color:#fff;
