@@ -170,3 +170,34 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+.trending-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 5px;
+}
+
+.trending-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.trending-table th {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: left;
+    padding: 10px;
+    position: sticky;
+    top: 0;
+}
+
+.trending-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.trending-table tr:hover {
+    background-color: #f5f7fa;
+    transition: background 0.2s ease;
+}

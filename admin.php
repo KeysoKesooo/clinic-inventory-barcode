@@ -44,7 +44,7 @@ $dispensing_trends = find_medicine_dispensing_trends();
 
         <a href="product.php" class="card card-products">
             <div class="card-value"><?php echo $c_product['total']; ?></div>
-            <div class="card-label">Products</div>
+            <div class="card-label">Medicines</div>
         </a>
 
         <a href="sales.php" class="card card-sales">
@@ -66,16 +66,37 @@ $dispensing_trends = find_medicine_dispensing_trends();
             </div>
         </div>
 
-        <!-- Medicine Dispensing Trends -->
+        <!-- Trending Products -->
         <div class="chart-card">
             <div class="chart-header">
-                <div class="chart-title">Medicine Dispensing Trends</div>
-                <p>How the dispensing of certain medicines changes over months.</p>
+                <div class="chart-title">Trending Medicines</div>
+                <p>Top-selling or most dispensed medicines this month.</p>
             </div>
-            <div class="chart">
-                <canvas id="medicineTrendsChart"></canvas>
+            <div class="trending-list">
+                <table class="trending-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Generic Name</th>
+                            <th>Total Dispensed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                $rank = 1;
+                // You can adjust this function to return top products by total dispensed
+                foreach ($dispensing_trends as $row): ?>
+                        <tr>
+                            <td><?php echo $rank++; ?></td>
+                            <td><?php echo htmlspecialchars($row['medicine_name']); ?></td>
+                            <td><?php echo (int)$row['total_dispensed']; ?> units</td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -127,7 +148,7 @@ $dispensing_trends = find_medicine_dispensing_trends();
                         },
                         title: {
                             display: true,
-                            text: 'Product Name'
+                            text: 'Generic Name'
                         }
                     }
                 }

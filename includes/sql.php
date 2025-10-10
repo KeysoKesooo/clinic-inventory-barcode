@@ -325,17 +325,21 @@ function find_stock_level_status(){
    Function: Get medicine dispensing trends
    Groups by product and month
 --------------------------------------------------------------*/
-function find_medicine_dispensing_trends(){
+function find_medicine_dispensing_trends() {
     global $db;
-    $sql  = "SELECT p.name AS medicine_name, ";
-    $sql .= "       DATE_FORMAT(s.date, '%Y-%m') AS month, ";
-    $sql .= "       SUM(s.qty) AS total_dispensed ";
-    $sql .= "FROM sales s ";
-    $sql .= "LEFT JOIN products p ON p.id = s.product_id ";
-    $sql .= "GROUP BY p.name, month ";
-    $sql .= "ORDER BY month ASC";
+    $sql  = "SELECT 
+                p.name AS medicine_name,
+                DATE_FORMAT(s.date, '%Y-%m') AS month,
+                SUM(s.qty) AS total_dispensed
+             FROM sales s
+             LEFT JOIN products p ON p.id = s.product_id
+             WHERE DATE_FORMAT(s.date, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')
+             GROUP BY p.name
+             ORDER BY total_dispensed DESC
+             LIMIT 10";
     return find_by_sql($sql);
 }
+
 
  /*--------------------------------------------------------------*/
  /* Function for find all sales
