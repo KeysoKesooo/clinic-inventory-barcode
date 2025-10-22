@@ -10,7 +10,7 @@ $all_photo = find_all('media');
 
 // === EDIT PRODUCT LOGIC ===
 if (isset($_POST['edit_product'])) {
-    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-expiration-date');
+    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-box', 'product-dosage', 'product-expiration-date');
     validate_fields($req_fields);
 
     if (empty($errors)) {
@@ -18,6 +18,7 @@ if (isset($_POST['edit_product'])) {
         $p_name    = remove_junk($db->escape($_POST['product-title']));
         $p_cat     = (int)$_POST['product-categorie'];
         $p_qty     = remove_junk($db->escape($_POST['product-quantity']));
+        $p_box     = remove_junk($db->escape($_POST['product-box']));
         $p_dosage  = remove_junk($db->escape($_POST['product-dosage']));
         $p_desc    = remove_junk($db->escape($_POST['product-description']));
         $p_exp     = remove_junk($db->escape($_POST['product-expiration-date']));
@@ -50,12 +51,12 @@ if (isset($_POST['edit_product'])) {
         }
 
         $query  = "UPDATE products SET ";
-        $query .= "name='{$p_name}', quantity='{$p_qty}', dosage='{$p_dosage}', description='{$p_desc}', ";
+        $query .= "name='{$p_name}', quantity='{$p_qty}', dosage='{$p_dosage}', description='{$p_desc}', pcs_per_box='{$p_box}', ";
         $query .= "categorie_id='{$p_cat}', product_photo='{$product_photo}', expiration_date='{$p_exp}' ";
         $query .= "WHERE id='{$id}'";
 
         if ($db->query($query) && $db->affected_rows() === 1) {
-            $session->msg('s', "Product updated");
+            $session->msg('s', "Medicine updated");
             redirect('product.php', false);
         } else {
             $session->msg('d', 'Sorry, failed to update!');
@@ -69,13 +70,14 @@ if (isset($_POST['edit_product'])) {
 
 // === ADD PRODUCT LOGIC ===
 if (isset($_POST['add_product'])) {
-    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-dosage', 'product-expiration-date');
+    $req_fields = array('product-title', 'product-categorie', 'product-quantity', 'product-box', 'product-dosage', 'product-expiration-date');
     validate_fields($req_fields);
 
     if (empty($errors)) {
         $p_name   = remove_junk($db->escape($_POST['product-title']));
         $p_cat    = remove_junk($db->escape($_POST['product-categorie']));
         $p_qty    = remove_junk($db->escape($_POST['product-quantity']));
+        $p_box    = remove_junk($db->escape($_POST['product-box']));
         $p_dosage = remove_junk($db->escape($_POST['product-dosage']));
         $p_desc   = remove_junk($db->escape($_POST['product-description']));
         $p_exp    = remove_junk($db->escape($_POST['product-expiration-date']));
@@ -103,7 +105,7 @@ if (isset($_POST['add_product'])) {
             }
         }
 
-        $query  = "INSERT INTO products (name, quantity, dosage, description, categorie_id, product_photo, expiration_date, date) ";
+        $query  = "INSERT INTO products (name, quantity, pcs_per_box, dosage, description, categorie_id, product_photo, expiration_date, date) ";
         $query .= "VALUES ('{$p_name}', '{$p_qty}', '{$p_dosage}', '{$p_desc}', '{$p_cat}', '{$photo_name}', '{$p_exp}', '{$date}')";
 
         if ($db->query($query)) {
@@ -476,6 +478,12 @@ if (isset($_POST['import_products'])) {
                 </div>
 
                 <div class="form_group">
+                    <label for="product-box">Units per box</label>
+                    <input class="form_style" type="number" name="product-box" id="product-box"
+                        placeholder="How many pcs per box" min="1" required>
+                </div>
+
+                <div class="form_group">
                     <label for="product-quantity">Quantity</label>
                     <input class="form_style" type="number" name="product-quantity" id="product-quantity"
                         placeholder="Product Quantity" min="1" required>
@@ -538,6 +546,12 @@ if (isset($_POST['import_products'])) {
                     <input class="form_style" type="file" name="product-photo" id="edit-product-photo" accept="image/*">
                     <!-- Optional: show current filename -->
                     <small id="current-photo-name" class="text-muted"></small>
+                </div>
+
+                <div class="form_group">
+                    <label for="product-box">Units per box</label>
+                    <input class="form_style" type="number" name="product-box" id="edit-product-box"
+                        placeholder="How many pcs per box" min="1" required>
                 </div>
 
                 <div class="form_group">

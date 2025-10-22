@@ -26,9 +26,26 @@ if (isset($_POST['product_id'])) {
         <input type="hidden" name="s_id" value="<?php echo (int)$product['id']; ?>">
         <input type="hidden" name="status" value="<?php echo ($mode === 'restock') ? 'restock' : 'dispense'; ?>">
 
+        <!-- Unit Type -->
         <div class="mb-3 text-start">
-            <label class="fw-semibold">Quantity</label>
+            <label class="fw-semibold">Unit Type</label>
+            <select name="unit_type" id="unit_type" class="form-select form-select-lg" required>
+                <option value="pcs">Each</option>
+                <option value="box">Box</option>
+            </select>
+        </div>
+
+        <!-- Quantity -->
+        <div class="mb-3 text-start" id="pcs_quantity_container">
+            <label class="fw-semibold">Quantity (pcs)</label>
             <input type="number" class="form-control form-control-lg" name="quantity" value="1" min="1" required>
+        </div>
+
+        <!-- Box Count -->
+        <div class="mb-3 text-start" id="box_quantity_container" style="display:none;">
+            <label class="fw-semibold">Number of Boxes</label>
+            <input type="number" class="form-control form-control-lg" name="box_count" value="1" min="1">
+            <small class="text-muted">Units per box: <?php echo (int)$product['pcs_per_box']; ?></small>
         </div>
 
         <?php if ($mode === 'sale') { ?>
@@ -53,6 +70,16 @@ if (isset($_POST['product_id'])) {
 </div>
 
 <script>
+$("#unit_type").change(function() {
+    if ($(this).val() === "box") {
+        $("#pcs_quantity_container").hide();
+        $("#box_quantity_container").show();
+    } else {
+        $("#box_quantity_container").hide();
+        $("#pcs_quantity_container").show();
+    }
+});
+
 $("#product-form").submit(function(e) {
     e.preventDefault();
     $.post("<?php echo $targetFile; ?>", $(this).serialize(), function(response) {
