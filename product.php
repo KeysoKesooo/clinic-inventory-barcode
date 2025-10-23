@@ -628,16 +628,16 @@ document.addEventListener('DOMContentLoaded', function() {
             '#table-content-products .table-row:not([style*="display: none"])');
 
         // Prepare CSV content
-        let csvContent = "No.,Generic Name,Category,In-Stock,Dosage,Description,Date Added\n";
+        let csvContent = "No.,Generic Name,Dosage,In-Stock,Category,Description,Date Added\n";
 
         visibleRows.forEach(row => {
             const columns = row.querySelectorAll('.table-data');
             const rowData = [
                 columns[0].textContent.trim(), // No.
                 columns[2].textContent.trim(), // Product Title
-                columns[3].textContent.trim(), // Category
+                columns[3].textContent.trim(), // Dosage
                 columns[4].textContent.trim(), // In-Stock
-                columns[5].textContent.trim(), // Dosage
+                columns[5].textContent.trim(), // Category
                 columns[6].textContent.trim(), // Description
                 columns[7].textContent.trim() // Date Added
             ];
