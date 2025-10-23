@@ -83,19 +83,28 @@ function tableExists($table){
 /*--------------------------------------------------------------*/
 function authenticate($username = '', $password = '') {
   global $db;
-  $username = $db->escape($username);
-  $sql  = "SELECT id, username, password FROM users WHERE username = '{$username}' LIMIT 1";
-  $result = $db->query($sql);
   
+  // Sanitize input
+  $username = $db->escape($username);
+
+  // Get user by username
+  $sql = sprintf("SELECT id, username, password, user_level FROM users WHERE username = '%s' LIMIT 1", $username);
+  $result = $db->query($sql);
+
   if ($db->num_rows($result) === 0) {
-    return false; // username doesn't exist
+    return false; // No user found
   }
 
   $user = $db->fetch_assoc($result);
 
-  // Skip password verification, always return user ID if username exists
-  return $user['id'];
+  // Verify password (bcrypt or password_hash)
+  if (password_verify($password, $user['password'])) {
+    return $user; // Return user array instead of only ID
+  }
+
+  return false; // Wrong password
 }
+
 
 
   /*--------------------------------------------------------------*/

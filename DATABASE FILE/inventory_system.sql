@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 22, 2025 at 03:03 PM
+-- Generation Time: Oct 23, 2025 at 10:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -157,8 +157,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `username`, `password`, `user_level`, `image`, `status`, `last_login`) VALUES
 (2, 'dyan Walker', 'special', 'ba36b97a41e7faf742ab09bf88405ac04f99599a', 2, 'no_image.png', 1, '2021-04-04 19:53:26'),
-(9, 'Grace Ortilliano', 'AdminGrace', '$2y$10$EwCk9DUA3q6nK3IasZc7hOu3xL9S8odIYqIhJ6sEt2BlL8zVChREK', 1, 'no_image.png', 1, '2025-10-22 14:46:46'),
-(11, 'Gracia Jeff', 'GraceAdmin', '$2y$10$WT3qcklkBsv8kRNyGcVSvu49kIYr/qvw6zM6eacHBdpb9aPXgNAUa', 1, 'no_image.png', 1, '2025-09-15 10:33:40'),
+(11, 'Gracia Jeff', 'GraceAdmin', '$2y$10$WT3qcklkBsv8kRNyGcVSvu49kIYr/qvw6zM6eacHBdpb9aPXgNAUa', 1, 'no_image.png', 1, '2025-10-23 10:26:43'),
 (12, 'Ruel  Weng', 'Nurse', '$2y$10$m1JpYXnYngz6xuV2EucF7unAAah9ZgVNAShyW3nIfcVXuyZ10tshi', 2, 'no_image.png', 1, '2025-08-12 09:47:08'),
 (13, 'try patingin', 'try', '$2y$10$ABfsXYHbRbUHRA/5zM/iw.C3LCqgMr7j65rNlwPfnRE3FW7NtnTFO', 1, 'no_image.png', 1, NULL),
 (31, 'John Doe', 'jdoe', '$2y$10$z91Y9PwH5LCcxRKUyWU/yuQTPmL4L1ypSJatSg3IJsV.LlY51BfOO', 1, 'no_image.png', 1, NULL),
@@ -181,7 +180,8 @@ INSERT INTO `users` (`id`, `name`, `username`, `password`, `user_level`, `image`
 (48, 'Karen Hill', 'khill', '$2y$10$YYS08QDMLf.dRrPOMdu4uOg8i2L4pQpW3gLvju/pdqXpNYwQovIVm', 1, 'no_image.png', 1, NULL),
 (49, 'Joseph Moore', 'jmoore', '$2y$10$W3z7mBMObg8qyixpzmsOpeMuZqYv5RRAYpPLjYDxgwN/bw7LfE3Wm', 2, 'no_image.png', 1, NULL),
 (50, 'Nancy Turner', 'nturner', '$2y$10$QRTNNAmlAk8XTmPPoRMKO.MOmB3.msx.YQA6WYb3pseAyNHo46kKq', 2, 'no_image.png', 1, NULL),
-(51, 'staff staff', 'staff', '$2y$10$Q/2WAZRzhv1wit3Pqi6t2edeSyGRG1GyQWTBHKyp7QiS4gYb5Vtty', 2, 'no_image.png', 1, '2025-09-15 14:01:25');
+(51, 'staff staff', 'staff', '$2y$10$Q/2WAZRzhv1wit3Pqi6t2edeSyGRG1GyQWTBHKyp7QiS4gYb5Vtty', 2, 'no_image.png', 1, '2025-09-15 14:01:25'),
+(53, 'Grasya Jeff Shark', 'Graceadmin', '$2y$10$pP2iH36PTIbeDTnRqTz0R.Dagy31394iLOS2HVhUhBG8i7U9E3Q0u', 1, 'no_image.png', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -283,7 +283,7 @@ ALTER TABLE `sales`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `user_groups`
